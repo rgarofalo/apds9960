@@ -12,6 +12,9 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
 
 
 import i2c
+import streams
+
+streams.serial()
 
 class APDS9960 (i2c.I2C):
  
@@ -89,25 +92,43 @@ class APDS9960 (i2c.I2C):
     def __init__(self, i2cdrv, addr=APDS9960_I2CADDR, clk=100000):
         i2c.I2C.__init__(self,i2cdrv,addr,clk)
         self._addr = addr
-        self._oss = 0
+        self.start()
+        print ('run library')
  
+    def _write(self, reg, data):
+        buffer = bytearray(1)
+        buffer[0] = reg
+        buffer.append(data)
+        
+        self.write(buffer)
  
     def initialize(self):
-        if (self.get_device_id() != 0xAB):
-            return False
-        self.write_byteswrite_bytes(self.REG_ENABLE)
-        self.write_bytes(self.ENABLE_PON | self.ENABLE_PEN | self.ENABLE_GEN)
-        self.write_bytes(self.REG_CONFIG2)
-        self.write_bytes(self.CONFIG2_LEDBOOST_300)
-        self.write_bytes(self.REG_GOFFSET_U, 70)
-        self.write_bytes(self.REG_GOFFSET_D, 0)
-        self.write_bytes(self.REG_GOFFSET_L, 10)
-        self.write_bytes(self.REG_GOFFSET_R, 34)
-        self.write_bytes(self.REG_CONFIG3, self.GCONFIG3_GDIMS_UD | self.GCONFIG3_GDIMS_LR)
-        self.write_bytes(self.REG_GCONFIG4, self.GCONFIG4_GMODE)
+        
+        
+        # if (self.get_device_id() != 0xAB):
+        #     print('Not init', self.get_device_id())
+        #     return False
+        # else:
+        #     print(self.get_device_id())
+        self._write(self.REG_ENABLE,1)
+        self._write(self.ENABLE_PON | self.ENABLE_PEN | self.ENABLE_GEN)
+        self._write(self.REG_CONFIG2)
+        self._write(self.CONFIG2_LEDBOOST_300)
+        self._write(self.REG_GOFFSET_U, 70)
+        self._write(self.REG_GOFFSET_D, 0)
+        self._write(self.REG_GOFFSET_L, 10)
+        self._write(self.REG_GOFFSET_R, 34)
+        self._write(self.REG_CONFIG3, self.GCONFIG3_GDIMS_UD | self.GCONFIG3_GDIMS_LR)
+        self._write(self.REG_GCONFIG4, self.GCONFIG4_GMODE)
  
     def get_device_id(self):
-        return self.read(self.REG_ID)
+        try:
+            print('get id')
+            n=self.write_read(0x92,1)
+            print (n[0])
+        except Exception as e:
+            print(e)
+        return
  
     def gesture(self):
         level = self.read(self.REG_GFLVL)
