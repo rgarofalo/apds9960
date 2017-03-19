@@ -15,14 +15,17 @@ try:
     print('ok')
     id=sensor.get_device_id()
     
+ 
+    sensor.initialize()
+    
+    
+    print("device ID: ", id )
+    sleep(1000)
+    
+    
     while True:
-        print("device ID: ", id )
+        print(sensor.gesture())
         sleep(1000)
-    #sensor.initialize()
 except Exception as e:
     print(e)
 
-
-#while True:
-#    print(sensor.gesture())
-#    sleep(1000)
