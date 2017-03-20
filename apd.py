@@ -26,7 +26,7 @@ class gesture_data_type():
 
 
 #Direction definitions
-direction = enumerate(['DIR_NONE', 'DIR_LEFT', 'DIR_RIGHT', 'DIR_UP', 'DIR_DOWN', 'DIR_NEAR', 'DIR_FAR', 'DIR_ALL'])
+direction = dict('DIR_NONE', 'DIR_LEFT', 'DIR_RIGHT', 'DIR_UP', 'DIR_DOWN', 'DIR_NEAR', 'DIR_FAR', 'DIR_ALL')
 
 class APDS9960(i2c.I2C):
     
