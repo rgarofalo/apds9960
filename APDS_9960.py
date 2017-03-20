@@ -8,7 +8,7 @@ APDS9960 Module
 This module contains the driver for APDS-9960, It's  features are Gesture detection,  Proximity  detection,  Digital  Ambient  Light  Sense (ALS) and Color Sense (RGBC)
 The APDS-9960 is a serious little piece of hardware with built in UV and IR blocking filters, four separate diodes sensitive to different directions, and an I2C compatible interface
 (`datasheet <https://cdn.sparkfun.com/datasheets/Sensors/Proximity/apds9960.pdf>`_).
-    """
+"""
 
 
 import i2c
@@ -174,8 +174,7 @@ DEFAULT_GIEN            = 0       # Disable gesture interrupts
 
 ERROR = 0xFF
 
-new_exception(RuntimeErrorSet,ValueError,'Cannot override values')
-new_exception(RuntimeErrorDel,ValueError,'Cannot delete values')
+DEBUG = 1
 
 class Enumeration(set):
     def __getattr__(self, name):
@@ -195,18 +194,46 @@ direction = Enumeration([ 'DIR_NONE', 'DIR_LEFT', 'DIR_RIGHT', 'DIR_UP', 'DIR_DO
 state = Enumeration([ 'NA_STATE', 'NEAR_STATE', 'FAR_STATE', 'ALL_STATE'])
 
 #Container for gesture data */
-class gesture_data_type(object):
-    __slots__=['u_data','d_data','l_data','r_data','index','total_gestures','in_threshold','out_threshold']
+#class gesture_data_type():
+#    __slots__=['u_data','d_data','l_data','r_data','index','total_gestures','in_threshold','out_threshold']
 
+class gesture_data_type():
+    def __init__(self):
+        self.u_data = 0
+        self.d_data = 0 
+        self.l_data = 0
+        self.r_data = 0
+        self.index = 0
+        self.total_gestures = 0
+        self.in_threshold = 0
+        self.out_threshold = 0
 
 
 class APDS9960(i2c.I2C):
     
     def __init__(self, i2cdrv, addr=0x39, clk=100000):
-        i2c.I2C.__init__(self,i2cdrv,addr,clk)
-        self._addr = addr
-        self.start()
- 
+        try:
+            print('me')
+            i2c.I2C.__init__(self,i2cdrv,addr,clk)
+            print('ok2')
+            self._addr = addr
+            self.start()
+            self.gesture_ud_delta_ = 0
+            self.gesture_lr_delta_ = 0
+        
+            self.gesture_ud_count_ = 0
+            self.gesture_lr_count_ = 0
+        
+            self.gesture_near_count_ = 0
+            self.gesture_far_count_ = 0
+        
+            self.gesture_state_ = 0
+            self.gesture_motion_ = direction.DIR_NONE
+            self.gesture_data_= gesture_data_type()
+        except Exception as e:
+            print(e)
+
+     
     def _write(self, reg, data):
         buffer = bytearray(1)
         buffer[0] = reg
@@ -219,17 +246,219 @@ class APDS9960(i2c.I2C):
         if (self.get_device_id()!= 0xAB):
             return False
         
-        self.setMode(ENABLE_ALL,ENABLE_ON)
+        #Set ENABLE register to 0 (disable all features)
+        self.setMode(ENABLE_ALL,ENABLE_OFF)
 
-        self.write_bytes(REG_GOFFSET_U, 0)
-        self.write_bytes(REG_GOFFSET_D, 0)
-        self.write_bytes(REG_GOFFSET_L, 0)
-        self.write_bytes(REG_GOFFSET_R, 4)
-        
-        self.write_bytes(REG_GCONF1, DEFAULT_GCONF1)
-        self.write_bytes(REG_CONFIG3, DEFAULT_GCONF3)
+        self.initiGesture()
+       
+        #self.write_bytes(REG_CONFIG3, DEFAULT_GCONF3)
         #self.write_bytes(REG_GCONFIG4, GCONFIG4_GMODE)
  
+    def initiGesture(self):
+        #Set default values for gesture sense registers */
+        self.write_bytes(self.REG_GPENTH, self.DEFAULT_GPENTH)
+        
+        self.write_bytes(self.REG_GEXTH ,self.DEFAULT_GEXTH)
+        self.write_bytes(self.REG_GCONF1, self.DEFAULT_GCONF1)
+        
+        self.write_bytes(REG_GCONF1, DEFAULT_GGAIN)
+        self.write_bytes(REG_GCONF1, DEFAULT_GCONF1)
+        self.write_bytes(REG_GCONF1, DEFAULT_GCONF1)
+        self.write_bytes(REG_GCONF1, DEFAULT_GCONF1)
+        self.write_bytes(REG_GCONF1, DEFAULT_GCONF1)
+
+  
+        self.setGestureGain(self.DEFAULT_GGAIN)
+
+        self.setGestureLEDDrive(self.DEFAULT_GLDRIVE)
+        self.setGestureWaitTime(self.DEFAULT_GWTIME)
+    
+        self.write_bytes(self.REG_GOFFSET_U, self.DEFAULT_GOFFSET)
+     
+        self.write_bytes(self.REG_GOFFSET_D, self.DEFAULT_GOFFSET)
+     
+        self.write_bytes(self.REG_GOFFSET_L, self.DEFAULT_GOFFSET)
+    
+        self.write_bytes(self.REG_GOFFSET_R, self.DEFAULT_GOFFSET)
+      
+        self.write_bytes(self.REG_GPULSE, self.DEFAULT_GPULSE) 
+        self.write_bytes(self.REG_GCONF3, self.DEFAULT_GCONF3) 
+        #         return false;
+        #     }
+        #     if( !setGestureIntEnable(DEFAULT_GIEN) ) {
+        #         return false;
+        # }
+
+
+    def getGestureLEDDrive(self):
+        """
+            Gets the drive current of the LED during gesture mode
+         
+              Value    LED Current
+                0        100 mA
+                1         50 mA
+                2         25 mA
+                3         12.5 mA
+         
+           return the LED drive current value. 0xFF on error.
+        """
+        
+        try:
+            val = self.write_read(self.REG_GCONF2, 1)
+        except:
+            raise ErrorReadingRegister
+        
+        #Shift and mask out GLDRIVE bits */
+        val = (val >> 3) & 0b00000011
+    
+        return val
+        
+    def setGestureLEDDrive(self, drive):
+        """
+            Sets the LED drive current during gesture mode
+         
+                Value    LED Current
+                  0        100 mA
+                  1         50 mA
+                  2         25 mA
+                  3         12.5 mA
+         
+            drive the value for the LED drive current
+            return True if operation successful. False otherwise.
+        """
+        try:
+            val = self.write_read(self.REG_GCONF2, 1)
+        except:
+            raise ErrorReadingRegister
+        
+    
+        #Set bits in register to given value */
+        drive &= 0b00000011
+        drive = drive << 3
+        val &= 0b11100111
+        val |= drive
+        
+          #Write register value back into GCONF2 register
+        try:       
+            self.write_bytes(self.REG_GCONF2,val)
+        except:
+           raise ErrorWritingRegister
+
+
+    def getGestureWaitTime(self):
+        """
+            Gets the time in low power mode between gesture detections
+         
+                Value    Wait time
+                  0          0 ms
+                  1          2.8 ms
+                  2          5.6 ms
+                  3          8.4 ms
+                  4         14.0 ms
+                  5         22.4 ms
+                  6         30.8 ms
+                  7         39.2 ms
+         
+            return the current wait time between gestures. 0xFF on error.
+        """
+        try:
+            val = self.write_read(self.REG_GCONF2, 1)
+        except:
+            raise ErrorReadingRegister
+    
+        #Mask out GWTIME bits */
+        val &= 0b00000111
+    
+        return val
+
+
+    def setGestureWaitTime(self, time):
+        """
+            Sets the time in low power mode between gesture detections
+         
+                Value    Wait time
+                  0          0 ms
+                  1          2.8 ms
+                  2          5.6 ms
+                  3          8.4 ms
+                  4         14.0 ms
+                  5         22.4 ms
+                  6         30.8 ms
+                  7         39.2 ms
+         
+            the value for the wait time
+            return True if operation successful. False otherwise.
+        """
+
+        try:
+            val = self.write_read(self.REG_GCONF2, 1)
+        except:
+            raise ErrorReadingRegister
+    
+        #Set bits in register to given value */
+        time &= 0b00000111
+        val &= 0b11111000
+        val |= time
+    
+        try:       
+            self.write_bytes(self.REG_GCONF2,val)
+        except:
+           raise ErrorWritingRegister
+           
+    def getGestureGain(self):
+        """
+            Gets the gain of the photodiode during gesture mode
+              Value    Gain
+                0       1x
+                1       2x
+                2       4x
+                3       8x
+            return the current photodiode gain. 0xFF on error.
+        """
+        
+        try:
+            val = self.write_read(self.REG_GCONF2, 1)
+        except:
+            raise ErrorReadingRegister
+        
+        #Shift and mask out GGAIN bits */
+        val = (val >> 5) & 0b00000011;
+    
+        return val
+    
+    def setGestureGain(self, gain):
+
+        """
+            Sets the gain of the photodiode during gesture mode
+         
+                Value    Gain
+                  0       1x
+                  1       2x
+                  2       4x
+                  3       8x
+         
+            gain the value for the photodiode gain
+            return True if operation successful. False otherwise.
+        """
+        try:
+            val = self.write_read(self.REG_GCONF2, 1)
+        except:
+            raise ErrorReadingRegister
+            
+        # Set bits in register to given value
+        gain &= 0b00000011
+        gain = gain << 5
+        val &= 0b10011111
+        val |= gain
+        
+        #Write register value back into GCONF2 register
+        try:       
+            self.write_bytes(self.REG_GCONF2,val)
+            
+        except:
+           raise ErrorWritingRegister
+     
+    
     def get_device_id(self):
         n = self.write_read(REG_ID, 1)
         return hex(n[0])
@@ -272,7 +501,6 @@ class APDS9960(i2c.I2C):
         except:
             return False
      
-   
     def getLEDBoost(self):
         """    
             brief Get the current LED boost value
@@ -311,7 +539,6 @@ class APDS9960(i2c.I2C):
         except:
             return False
      
-    
     def enableGestureSensor(self, interrupts):
         """ 
         Starts the gesture recognition engine on the APDS-9960
@@ -329,15 +556,15 @@ class APDS9960(i2c.I2C):
 
         self.setLEDBoost(LED_BOOST_300)
      
-    # if( interrupts ) {
-    #     if( !setGestureIntEnable(1) ) {
-    #         return false;
-    #     }
-    # } else {
-    #     if( !setGestureIntEnable(0) ) {
-    #         return false;
-    #     }
-    # }
+        # if( interrupts ) {
+        #     if( !setGestureIntEnable(1) ) {
+        #         return false;
+        #     }
+        # } else {
+        #     if( !setGestureIntEnable(0) ) {
+        #         return false;
+        #     }
+        # }
     
     
         if not self.setGestureMode(1):
@@ -357,7 +584,6 @@ class APDS9960(i2c.I2C):
     
     
         return True
-
 
     def enablePower(self):
         """ 
@@ -380,7 +606,6 @@ class APDS9960(i2c.I2C):
         
         return True
  
- 
     def setGestureMode(self, mode):
         
         """
@@ -401,7 +626,6 @@ class APDS9960(i2c.I2C):
         except:
             return False
    
-
     def isGestureAvailable(self):
         
         """ 
@@ -425,7 +649,7 @@ class APDS9960(i2c.I2C):
         else:
             return True
     
-    def readGesture():
+    def readGesture(self):
      
         """ 
             Processes a gesture event and returns best guessed gesture
@@ -433,32 +657,29 @@ class APDS9960(i2c.I2C):
         """
 
         fifo_level = 0
-        bytes_read = 0
-        fifo_data
-        gstatus
-        motion
-        i
+
     
         #Make sure that power and gesture is on and data is valid */
-        if not self.isGestureAvailable() || not (self.getMode() & 0b01000001):
+        mode= self.getMode() & 0b01000001
+        if not self.isGestureAvailable() or mode != 0b01000001 :
             return direction.DIR_NONE
     
         #Keep looping as long as gesture data is valid
         while True:
             #Wait some time to collect next batch of FIFO data
-            sleep(FIFO_PAUSE_TIME)
+            sleep(self.FIFO_PAUSE_TIME)
             #Get the contents of the STATUS register. Is data still valid?
             try:
-                gstatus = self.write_read(REG_GSTATUS, 1)
+                gstatus = self.write_read(self.REG_GSTATUS, 1)
             except:
                 return ERROR
         
             #If we have valid data, read in FIFO
-            if (gstatus & APDS9960_GVALID) == APDS9960_GVALID:
+            if (gstatus & self.REG_GVALID) == self.REG_GVALID:
         
                 #Read the current FIFO level
                 try:
-                    fifo_level = self.write_read(APDS9960_GFLVL, 1)
+                    fifo_level = self.write_read(self.REG_GFLVL, 1)
                 except:
                     return ERROR
 
@@ -473,38 +694,36 @@ class APDS9960(i2c.I2C):
     
                     # If at least 1 set of data, sort the data into U/D/L/R */
                     for i  in range(0 ,len(fifo_data), 4) :
-                        gesture_data_.u_data[gesture_data_.index] = fifo_data[i + 0]
-                        gesture_data_.d_data[gesture_data_.index] = fifo_data[i + 1]
-                        gesture_data_.l_data[gesture_data_.index] = fifo_data[i + 2]
-                        gesture_data_.r_data[gesture_data_.index] = fifo_data[i + 3]
-                        gesture_data_.index++
-                        gesture_data_.total_gestures++
+                        self.gesture_data_.u_data[self.gesture_data_.index] = fifo_data[i + 0]
+                        self.gesture_data_.d_data[self.gesture_data_.index] = fifo_data[i + 1]
+                        self.gesture_data_.l_data[self.gesture_data_.index] = fifo_data[i + 2]
+                        self.gesture_data_.r_data[self.gesture_data_.index] = fifo_data[i + 3]
+                        self.gesture_data_.index+=1
+                        self.gesture_data_.total_gestures+=1
                     
                     
                     #Filter and process gesture data. Decode near/far state
-                    if processGestureData():
-                        if decodeGesture():
+                    if self.processGestureData():
+                        if self.decodeGesture():
         
-                            print(gesture_motion_)
+                            print(self.gesture_motion_)
 
-                    gesture_data_.index = 0;
-                    gesture_data_.total_gestures = 0;
+                    self.self.gesture_data_.index = 0;
+                    self.self.gesture_data_.total_gestures = 0;
           
                 else:
     
                     #Determine best guessed gesture and clean up */
-                    sleep(FIFO_PAUSE_TIME)
-                    decodeGesture()
-                    motion = gesture_motion_
+                    sleep(self.FIFO_PAUSE_TIME)
+                    self.decodeGesture()
+                    motion = self.gesture_motion_
 
                     print("END: ")
-                    print(gesture_motion_)
-                    resetGestureParameters()
+                    print(self.gesture_motion_)
+                    self.resetGestureParameters()
                     return motion
-
-
-
-    def processGestureData():
+                    
+    def processGestureData(self):
         """
             Processes the raw gesture data to determine swipe direction
             return True if near or far state seen. False otherwise.
@@ -518,56 +737,48 @@ class APDS9960(i2c.I2C):
         d_last = 0
         l_last = 0
         r_last = 0
-        int ud_ratio_first
-        int lr_ratio_first
-        int ud_ratio_last
-        int lr_ratio_last
-        int ud_delta
-        int lr_delta
-        int i
+     
 
         #If we have less than 4 total gestures, that's not enough 
-        if gesture_data_.total_gestures <= 4:
+        if self.gesture_data_.total_gestures <= 4:
             return False
     
     
         #Check to make sure our data isn't out of bounds
-        if gesture_data_.total_gestures <= 32 && gesture_data_.total_gestures > 0:
+        if self.gesture_data_.total_gestures <= 32 and self.gesture_data_.total_gestures > 0:
         
             #Find the first value in U/D/L/R above the threshold
-            for i = 0; i < gesture_data_.total_gestures; i++ :
-                if (gesture_data_.u_data[i] >  GESTURE_THRESHOLD_OUT) && (gesture_data_.d_data[i] > GESTURE_THRESHOLD_OUT) && (gesture_data_.l_data[i] > GESTURE_THRESHOLD_OUT) && (gesture_data_.r_data[i] > GESTURE_THRESHOLD_OUT):
+            for i in range(0, self.gesture_data_.total_gestures) :
+                if (self.self.gesture_data_.u_data[i] >  self.GESTURE_THRESHOLD_OUT) and (self.self.gesture_data_.d_data[i] > self.GESTURE_THRESHOLD_OUT) and (self.self.gesture_data_.l_data[i] > self.GESTURE_THRESHOLD_OUT) and (self.self.gesture_data_.r_data[i] > self.GESTURE_THRESHOLD_OUT):
                     
-                    u_first = gesture_data_.u_data[i]
-                    d_first = gesture_data_.d_data[i]
-                    l_first = gesture_data_.l_data[i]
-                    r_first = gesture_data_.r_data[i]
+                    u_first = self.self.gesture_data_.u_data[i]
+                    d_first = self.self.gesture_data_.d_data[i]
+                    l_first = self.self.gesture_data_.l_data[i]
+                    r_first = self.self.gesture_data_.r_data[i]
                     break
                 
             
         
         #If one of the _first values is 0, then there is no good data 
-        if (u_first == 0) || (d_first == 0) || (l_first == 0) || (r_first == 0) :
+        if (u_first == 0) or (d_first == 0) or (l_first == 0) or (r_first == 0) :
             return False
         
         # Find the last value in U/D/L/R above the threshold
-        for i = gesture_data_.total_gestures - 1; i >= 0; i-- : 
+        #for i = self.gesture_data_.total_gestures - 1; i >= 0; i-- : 
+        for i in reversed(range(self.self.gesture_data_.total_gestures)):
             if DEBUG:
                 print("Finding last: ")
-                print("U:" , gesture_data_.u_data[i])
-                print(" D:", gesture_data_.d_data[i])
-                print(" L:", gesture_data_.l_data[i])
-                print(" R:", gesture_data_.r_data[i])
+                print("U:" , self.gesture_data_.u_data[i])
+                print(" D:", self.gesture_data_.d_data[i])
+                print(" L:", self.gesture_data_.l_data[i])
+                print(" R:", self.gesture_data_.r_data[i])
                 
-            if  (gesture_data_.u_data[i] > GESTURE_THRESHOLD_OUT) &&
-                (gesture_data_.d_data[i] > GESTURE_THRESHOLD_OUT) &&
-                (gesture_data_.l_data[i] > GESTURE_THRESHOLD_OUT) &&
-                (gesture_data_.r_data[i] > GESTURE_THRESHOLD_OUT) :
+            if (self.gesture_data_.u_data[i] > self.GESTURE_THRESHOLD_OUT) and (self.gesture_data_.d_data[i] > self.GESTURE_THRESHOLD_OUT) and (self.gesture_data_.l_data[i] > self.GESTURE_THRESHOLD_OUT) and (self.gesture_data_.r_data[i] > self.GESTURE_THRESHOLD_OUT) :
                 
-                    u_last = gesture_data_.u_data[i]
-                    d_last = gesture_data_.d_data[i]
-                    l_last = gesture_data_.l_data[i]
-                    r_last = gesture_data_.r_data[i]
+                    u_last = self.gesture_data_.u_data[i]
+                    d_last = self.gesture_data_.d_data[i]
+                    l_last = self.gesture_data_.l_data[i]
+                    r_last = self.gesture_data_.r_data[i]
                     break
             
         
@@ -603,78 +814,77 @@ class APDS9960(i2c.I2C):
             print(" LR: " , lr_delta)
 
         #Accumulate the UD and LR delta values */
-        gesture_ud_delta_ += ud_delta;
-        gesture_lr_delta_ += lr_delta;
+        self.gesture_ud_delta_ += ud_delta;
+        self.gesture_lr_delta_ += lr_delta;
         
         if DEBUG:
             print("Accumulations: ");
-            print("UD: " , gesture_ud_delta_)
-            print(" LR: ", gesture_lr_delta_)
+            print("UD: " , self.gesture_ud_delta_)
+            print(" LR: ", self.gesture_lr_delta_)
 
     
         #Determine U/D gesture */
-        if gesture_ud_delta_ >= GESTURE_SENSITIVITY_1 :
-            gesture_ud_count_ = 1
-        elif gesture_ud_delta_ <= -GESTURE_SENSITIVITY_1 :
-            gesture_ud_count_ = -1
+        if self.gesture_ud_delta_ >= self.GESTURE_SENSITIVITY_1 :
+            self.gesture_ud_count_ = 1
+        elif self.gesture_ud_delta_ <= -self.GESTURE_SENSITIVITY_1 :
+            self.gesture_ud_count_ = -1
         else:
-            gesture_ud_count_ = 0
+            self.gesture_ud_count_ = 0
     
     
         # Determine L/R gesture */
-        if gesture_lr_delta_ >= GESTURE_SENSITIVITY_1:
-            gesture_lr_count_ = 1
-        elif( gesture_lr_delta_ <= -GESTURE_SENSITIVITY_1:
-            gesture_lr_count_ = -1
+        if self.gesture_lr_delta_ >= self.GESTURE_SENSITIVITY_1:
+            self.gesture_lr_count_ = 1
+        elif self.gesture_lr_delta_ <= -self.GESTURE_SENSITIVITY_1:
+            self.gesture_lr_count_ = -1
         else: 
-            gesture_lr_count_ = 0
+            self.gesture_lr_count_ = 0
     
     
         #Determine Near/Far gesture */
-        if gesture_ud_count_ == 0 && gesture_lr_count_ == 0:
-            if abs(ud_delta) < GESTURE_SENSITIVITY_2 &&  abs(lr_delta) < GESTURE_SENSITIVITY_2:
+        if self.gesture_ud_count_ == 0 and self.gesture_lr_count_ == 0:
+            if abs(ud_delta) < self.GESTURE_SENSITIVITY_2 and  abs(lr_delta) < self.GESTURE_SENSITIVITY_2:
             
-                if ud_delta == 0 && lr_delta == 0:
-                    gesture_near_count_++
-                elif ud_delta != 0 || lr_delta != 0:
-                    gesture_far_count_++
+                if ud_delta == 0 and lr_delta == 0:
+                    self.gesture_near_count_+=1
+                elif ud_delta != 0 or lr_delta != 0:
+                    self.gesture_far_count_+=1
             
             
-                if  gesture_near_count_ >= 10 && gesture_far_count_ >= 2:
-                    if ud_delta == 0 && lr_delta == 0:
-                        gesture_state_ = NEAR_STATE
-                    elif ud_delta != 0 && lr_delta != 0:
-                        gesture_state_ = FAR_STATE
+                if  self.gesture_near_count_ >= 10 and self.gesture_far_count_ >= 2:
+                    if ud_delta == 0 and lr_delta == 0:
+                        self.gesture_state_ = direction.NEAR_STATE
+                    elif ud_delta != 0 and lr_delta != 0:
+                        self.gesture_state_ = direction.FAR_STATE
                     
                     return True
         
         else:
-            if abs(ud_delta) < GESTURE_SENSITIVITY_2 && abs(lr_delta) < GESTURE_SENSITIVITY_2:
+            if abs(ud_delta) < self.GESTURE_SENSITIVITY_2 and abs(lr_delta) < self.GESTURE_SENSITIVITY_2:
                 
-                if( (ud_delta == 0) && (lr_delta == 0):
-                    gesture_near_count_++
+                if (ud_delta == 0) and (lr_delta == 0):
+                    self.gesture_near_count_+=1
             
             
-                if gesture_near_count_ >= 10:
-                    gesture_ud_count_ = 0
-                    gesture_lr_count_ = 0
-                    gesture_ud_delta_ = 0
-                    gesture_lr_delta_ = 0
+                if self.gesture_near_count_ >= 10:
+                    self.gesture_ud_count_ = 0
+                    self.gesture_lr_count_ = 0
+                    self.gesture_ud_delta_ = 0
+                    self.gesture_lr_delta_ = 0
             
         
     
     
-    if DEBUG:
-        print("UD_CT: " , gesture_ud_count_)
-        print(" LR_CT: ", gesture_lr_count_)
-        print(" NEAR_CT: ", gesture_near_count_)
-        print(" FAR_CT: ", gesture_far_count_)
-        print("----------")
+        if DEBUG:
+            print("UD_CT: " , self.gesture_ud_count_)
+            print(" LR_CT: ", self.gesture_lr_count_)
+            print(" NEAR_CT: ", self.gesture_near_count_)
+            print(" FAR_CT: ", self.gesture_far_count_)
+            print("----------")
 
         return False
 
-
-    def decodeGesture():
+    def decodeGesture(self):
         
         """ 
             Determines swipe direction or near/far state
@@ -682,46 +892,46 @@ class APDS9960(i2c.I2C):
         """
 
         #Return if near or far event is detected */
-        if gesture_state_ == NEAR_STATE:
-            gesture_motion_ = DIR_NEAR
+        if self.gesture_state_ == direction.NEAR_STATE:
+            self.gesture_motion_ = direction.DIR_NEAR
             return True
-        elif gesture_state_ == FAR_STATE:
-            gesture_motion_ = DIR_FAR
+        elif self.gesture_state_ == direction.FAR_STATE:
+            self.gesture_motion_ = direction.DIR_FAR
             return True
     
     
         #Determine swipe direction
-        if gesture_ud_count_ == -1 && gesture_lr_count_ == 0:
-            gesture_motion_ = DIR_UP
-        elif gesture_ud_count_ == 1 && gesture_lr_count_ == 0:
-            gesture_motion_ = DIR_DOWN
-        elif( (gesture_ud_count_ == 0) && (gesture_lr_count_ == 1):
-            gesture_motion_ = DIR_RIGHT
-        elif( (gesture_ud_count_ == 0) && (gesture_lr_count_ == -1):
-            gesture_motion_ = DIR_LEFT;
-        elif( (gesture_ud_count_ == -1) && (gesture_lr_count_ == 1):
-            if abs(gesture_ud_delta_) > abs(gesture_lr_delta_):
-                gesture_motion_ = DIR_UP
+        if self.gesture_ud_count_ == -1 and self.gesture_lr_count_ == 0:
+            self.gesture_motion_ = direction.DIR_UP
+        elif self.gesture_ud_count_ == 1 and self.gesture_lr_count_ == 0:
+            self.gesture_motion_ = direction.DIR_DOWN
+        elif (self.gesture_ud_count_ == 0) and (self.gesture_lr_count_ == 1):
+            self.gesture_motion_ = direction.DIR_RIGHT
+        elif (self.gesture_ud_count_ == 0) and (self.gesture_lr_count_ == -1):
+            self.gesture_motion_ = direction.DIR_LEFT
+        elif (self.gesture_ud_count_ == -1) and (self.gesture_lr_count_ == 1):
+            if abs(self.gesture_ud_delta_) > abs(self.gesture_lr_delta_):
+                self.gesture_motion_ = direction.DIR_UP
             else:
-                gesture_motion_ = DIR_RIGHT
+                self.gesture_motion_ = direction.DIR_RIGHT
         
-        elif (gesture_ud_count_ == 1) && (gesture_lr_count_ == -1):
-            if abs(gesture_ud_delta_) > abs(gesture_lr_delta_):
-                gesture_motion_ = DIR_DOWN
+        elif (self.gesture_ud_count_ == 1) and (self.gesture_lr_count_ == -1):
+            if abs(self.gesture_ud_delta_) > abs(self.gesture_lr_delta_):
+                self.gesture_motion_ = direction.DIR_DOWN
             else:
-                gesture_motion_ = DIR_LEFT
+                self.gesture_motion_ = direction.DIR_LEFT
         
-        elif(gesture_ud_count_ == -1) && (gesture_lr_count_ == -1):
-            if abs(gesture_ud_delta_) > abs(gesture_lr_delta_):
-                gesture_motion_ = DIR_UP
+        elif(self.gesture_ud_count_ == -1) and (self.gesture_lr_count_ == -1):
+            if abs(self.gesture_ud_delta_) > abs(self.gesture_lr_delta_):
+                self.gesture_motion_ = direction.DIR_UP
             else:
-                gesture_motion_ = DIR_LEFT
+                self.gesture_motion_ = direction.DIR_LEFT
             
-        elif( (gesture_ud_count_ == 1) && (gesture_lr_count_ == 1):
-            if abs(gesture_ud_delta_) > abs(gesture_lr_delta_):
-                gesture_motion_ = DIR_DOWN
+        elif(self.gesture_ud_count_ == 1) and (self.gesture_lr_count_ == 1):
+            if abs(self.gesture_ud_delta_) > abs(self.gesture_lr_delta_):
+                self.gesture_motion_ = direction.DIR_DOWN
             else:
-                gesture_motion_ = DIR_RIGHT
+                self.gesture_motion_ = direction.DIR_RIGHT
             
         else:
             return False
@@ -730,13 +940,3 @@ class APDS9960(i2c.I2C):
         return True
 
  
-    def gesture(self):
-        level = self.write_read(self.REG_GFLVL,1)
-        if (level == 0):
-            return # no data
-        fifo_u = self.write_read(self.REG_GFIFO_U)
-        fifo_d = self.write_read(self.REG_GFIFO_D)
-        fifo_l = self.write_read(self.REG_GFIFO_L)
-        fifo_r = self.write_read(self.REG_GFIFO_R)
-        
-        return fifo_u, fifo_d, fifo_l, fifo_r

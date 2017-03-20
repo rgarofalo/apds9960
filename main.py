@@ -10,22 +10,24 @@ print("start")
 
 
 try:
-    import APDS_9960
-    sensor = APDS_9960.APDS9960(I2C0)
+   
+    import apd
+    sensor = apd.APDS9960(I2C0)
     print('ok')
-    id=sensor.get_device_id()
+    # id=sensor.get_device_id()
     
  
-    sensor.initialize()
+    # sensor.initialize()
     
     
-    print("device ID: ", id )
-    sleep(1000)
+    # print("device ID: ", id )
+    # sleep(1000)
     
     
-    while True:
-        print(sensor.gesture())
-        sleep(1000)
+    # while True:
+    #     if sensor.isGestureAvailable():
+    #          print(sensor.readGesture())
+    #     sleep(1000)
 except Exception as e:
     print(e)
 
