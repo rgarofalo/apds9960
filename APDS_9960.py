@@ -13,10 +13,14 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
 
 import i2c
 
+import streams
+
+streams.serial()
 new_exception(RuntimeErrorSet,ValueError,'Cannot override values')
 new_exception(RuntimeErrorDel,ValueError,'Cannot delete values')
 new_exception(ErrorReadingRegister,RuntimeError,'It was an error while reading the register')
 new_exception(ErrorWritingRegister,RuntimeError,'There was an error writing to the register')
+new_exception(NotDevice,RuntimeError,'NotDevice')
 
 
 # BMP180 default address.
@@ -168,7 +172,7 @@ DEFAULT_CONFIG2         = 0x01    # No saturation interrupts or LED boost
 DEFAULT_CONFIG3         = 0       # Enable all photodiodes, no SAI
 DEFAULT_GPENTH          = 40      # Threshold for entering gesture mode
 DEFAULT_GEXTH           = 30      # Threshold for exiting gesture mode    
-DEFAULT_GCONF1          = 0x40    # 4 gesture events for int., 1 for exit
+DEFAULT_GCONF1          = 0x00    # 4 gesture events for int., 1 for exit
 DEFAULT_GGAIN           = GGAIN_4X
 DEFAULT_GLDRIVE         = LED_DRIVE_100MA
 DEFAULT_GWTIME          = GWTIME_2_8MS
@@ -176,6 +180,10 @@ DEFAULT_GOFFSET         = 0       # No offset scaling for gesture mode
 DEFAULT_GPULSE          = 0xC9    # 32us, 10 pulses
 DEFAULT_GCONF3          = 0       # All photodiodes active during gesture
 DEFAULT_GIEN            = 0       # Disable gesture interrupts
+
+#define PROXIMITY_GAIN          0x0C
+#define AP_CONFIG               0x71
+#define P_DATA 0x73
 
 REG_GVALID = 0b00000001
 
@@ -217,7 +225,7 @@ class gesture_data_type():
 
 class APDS9960(i2c.I2C):
     
-    def __init__(self, i2cdrv, addr=0x39, clk=100000):
+    def __init__(self, i2cdrv, addr=0x39, clk=400000):
         try:
             i2c.I2C.__init__(self,i2cdrv,addr,clk)
             self._addr = addr
@@ -234,15 +242,19 @@ class APDS9960(i2c.I2C):
             self.gesture_state_ = 0
             self.gesture_motion_ = DIRECTION['DIR_NONE']
             self.gesture_data_= gesture_data_type()
-            print('ok2')
         except Exception as e:
             print(e)
 
    
-    def initialize(self):
+    def initialize(self):        
+        self._printDEBUG('Start Inizialize')
 
-        if (self.get_device_id()!= 0xAB):
-            return False
+        if (self.get_device_id()!= '0xAB'):
+            raise NotDevice
+        else:
+            self._printDEBUG("device ID: ", self.get_device_id() )
+
+        
         
         #Set ENABLE register to 0 (disable all features)
         self.setMode(ENABLE_ALL,ENABLE_OFF)
@@ -253,16 +265,16 @@ class APDS9960(i2c.I2C):
         self.write_bytes(REG_PPULSE, DEFAULT_PROX_PPULSE)
         self.write_bytes(REG_POFFSET_UR, DEFAULT_POFFSET_UR)
         self.write_bytes(REG_POFFSET_DL, DEFAULT_POFFSET_DL)
+        
         self.write_bytes(REG_CONFIG1, DEFAULT_CONFIG1)
+        
         self.setLEDDrive(DEFAULT_LDRIVE)
-        
         self.setProximityGain(DEFAULT_PGAIN)
-        
         self.setAmbientLightGain(DEFAULT_AGAIN)
         
         self.write_bytes(REG_PILT,DEFAULT_PILT)
         self.write_bytes(REG_PIHT,DEFAULT_PIHT)
- 
+        
         self.setLightIntLowThreshold(DEFAULT_AILT)
         self.setLightIntHighThreshold(DEFAULT_AIHT)
         
@@ -271,7 +283,6 @@ class APDS9960(i2c.I2C):
         self.write_bytes(REG_CONFIG3, DEFAULT_CONFIG3)
         
 
-        self.initiGesture()
        
 
     def initiGesture(self):
@@ -280,12 +291,14 @@ class APDS9960(i2c.I2C):
         
         self.write_bytes(REG_GEXTH ,DEFAULT_GEXTH)
 
-        self.write_bytes(REG_GCONF1, DEFAULT_GGAIN)
         self.write_bytes(REG_GCONF1, DEFAULT_GCONF1)
-  
-        self.setGestureGain(DEFAULT_GGAIN)
+        
+        self.setGestureGain(DEFAULT_GGAIN) # REG_GCONF2
 
+        self.write_bytes(REG_GCONF1, DEFAULT_GGAIN)
+        
         self.setGestureLEDDrive(DEFAULT_GLDRIVE)
+        
         self.setGestureWaitTime(DEFAULT_GWTIME)
     
         self.write_bytes(REG_GOFFSET_U, DEFAULT_GOFFSET)
@@ -471,7 +484,7 @@ class APDS9960(i2c.I2C):
            return the LED drive current value. 0xFF on error.
         """
         try:
-            val = self.write_read(REG_GCONF2, 1)
+            val = self.write_read(REG_GCONF2, 1)[0]
         except:
             raise ErrorReadingRegister
         
@@ -494,7 +507,7 @@ class APDS9960(i2c.I2C):
             return True if operation successful. False otherwise.
         """
         try:
-            val = self.write_read(REG_GCONF2, 1)
+            val = self.write_read(REG_GCONF2, 1)[0]
         except:
             raise ErrorReadingRegister
         
@@ -508,9 +521,63 @@ class APDS9960(i2c.I2C):
           #Write register value back into GCONF2 register
         try:       
             self.write_bytes(REG_GCONF2,val)
+            self._printDEBUG("setGestureLEDDrive ", val )
+
         except:
            raise ErrorWritingRegister
 
+    def getLEDDrive(self):
+        
+        """
+            Returns LED drive strength for proximity and ALS
+             
+              Value    LED Current
+                0        100 mA
+                1         50 mA
+                2         25 mA
+                3         12.5 mA
+         
+            return the value of the LED drive strength. 0xFF on failure.
+        """
+        try:
+            val = self.write_read(REG_CONTROL, 1)[0]
+        except:
+            raise ErrorReadingRegister
+
+        #Shift and mask out LED drive bits */
+        val = (val >> 6) & 0b00000011
+    
+        return val
+
+
+    def setLEDDrive(self, drive):
+        """
+            Sets the LED drive strength for proximity and ALS
+         
+              Value    LED Current
+                0        100 mA
+                1         50 mA
+                2         25 mA
+                3         12.5 mA
+             
+            drive the value (0-3) for the LED drive strength
+            return True if operation successful. False otherwise.
+        """    
+        try:
+            val = self.write_read(REG_CONTROL, 1)[0]
+        except:
+            raise ErrorReadingRegister
+            
+        #Set bits in register to given value */
+        drive &= 0b00000011
+        drive = drive << 6
+        val &= 0b00111111
+        val |= drive
+        
+        try:       
+            self.write_bytes(REG_CONTROL,val)
+        except:
+           raise ErrorWritingRegister
 
     def getGestureWaitTime(self):
         """
@@ -529,7 +596,7 @@ class APDS9960(i2c.I2C):
             return the current wait time between gestures. 0xFF on error.
         """
         try:
-            val = self.write_read(REG_GCONF2, 1)
+            val = self.write_read(REG_GCONF2, 1)[0]
         except:
             raise ErrorReadingRegister
     
@@ -537,7 +604,22 @@ class APDS9960(i2c.I2C):
         val &= 0b00000111
     
         return val
-
+    
+    def getRegGCONF2(self):
+        try:
+            val = self.write_read(REG_GCONF2, 1)[0]
+        except:
+            raise ErrorReadingRegister
+        
+        return val
+    
+    def getRegGCONF4(self):
+        try:
+            val = self.write_read(REG_GCONF4, 1)[0]
+        except:
+            raise ErrorReadingRegister
+        
+        return val
 
     def setGestureWaitTime(self, time):
         """
@@ -558,7 +640,7 @@ class APDS9960(i2c.I2C):
         """
 
         try:
-            val = self.write_read(REG_GCONF2, 1)
+            val = self.write_read(REG_GCONF2, 1)[0]
         except:
             raise ErrorReadingRegister
     
@@ -569,6 +651,8 @@ class APDS9960(i2c.I2C):
     
         try:       
             self.write_bytes(REG_GCONF2,val)
+            self._printDEBUG("setGestureWaitTime ", val )
+
         except:
            raise ErrorWritingRegister
            
@@ -584,7 +668,7 @@ class APDS9960(i2c.I2C):
         """
         
         try:
-            val = self.write_read(REG_GCONF2, 1)
+            val = self.write_read(REG_GCONF2, 1)[0]
         except:
             raise ErrorReadingRegister
         
@@ -608,7 +692,7 @@ class APDS9960(i2c.I2C):
             return True if operation successful. False otherwise.
         """
         try:
-            val = self.write_read(REG_GCONF2, 1)
+            val = self.write_read(REG_GCONF2, 1)[0]
         except:
             raise ErrorReadingRegister
             
@@ -621,7 +705,7 @@ class APDS9960(i2c.I2C):
         #Write register value back into GCONF2 register
         try:       
             self.write_bytes(REG_GCONF2,val)
-            
+            self._printDEBUG("setGestureWaitTime", val)
         except:
            raise ErrorWritingRegister
 
@@ -632,7 +716,7 @@ class APDS9960(i2c.I2C):
         """
 
         try:
-            val = self.write_read(REG_GCONF4, 1)
+            val = self.write_read(REG_GCONF4, 1)[0]
         except:
             raise ErrorReadingRegister
  
@@ -679,36 +763,35 @@ class APDS9960(i2c.I2C):
             Contents of the ENABLE register. 0xFF if error.
         """
         try:
-            enable_value = self.write_read(REG_ENABLE, 1)
+            enable_value = self.write_read(REG_ENABLE, 1)[0]
         except:
             raise ErrorReadingRegister
         
-        return enable_value[0]
+        return enable_value
 
     def setMode(self, mode, enable):
 
         reg_val = self.getMode()
 
-        if reg_val == ERROR :
-            return False
-        
-        enable = enable & 0x01
+        #enable = enable & 0x01
+        self._printDEBUG('setMode:' , mode)
         if mode >= 0 and mode <= 6:
-            if enable== ENABLE_ON:
+            if enable:
                 reg_val |= (1 << mode)
             else:
                 reg_val &= ~(1 << mode)
-        elif mode == ENABLE_ALL :
-            if enable == ENABLE_ON:
-                reg_val = 0x7F;
+        elif mode == ENABLE_ALL:
+            if enable==1:
+                reg_val = 0x7F
             else:
                 reg_val = 0x00
         
         try:       
             self.write_bytes(REG_ENABLE,reg_val)
-            return True
         except:
-            return False
+            raise ErrorWritingRegister
+        
+        return True
      
     def getLEDBoost(self):
         """    
@@ -760,7 +843,9 @@ class APDS9960(i2c.I2C):
         Set AUX to LED_BOOST_300
         Enable PON, WEN, PEN, GEN in ENABLE
         """ 
-        self.resetGestureParameters()
+        
+        self._printDEBUG('Start enableGestureSensor')
+        #self.resetGestureParameters()
         
         self.write_bytes(REG_WTIME, 0xFF)
         self.write_bytes(REG_PPULSE, DEFAULT_GESTURE_PPULSE)
@@ -772,8 +857,7 @@ class APDS9960(i2c.I2C):
         else:
             self.setGestureIntEnable(0)
         
-        if not self.setGestureMode(1):
-            return False
+        self.setGestureMode(1)
 
         if not self.enablePower():
             return False
@@ -787,7 +871,6 @@ class APDS9960(i2c.I2C):
         if not self.setMode(ENABLE_GESTURE, 1):
             return False
     
-    
         return True
 
     def enablePower(self):
@@ -798,7 +881,7 @@ class APDS9960(i2c.I2C):
         if not self.setMode(ENABLE_POWER, 1):
             return False
         
-        return True;
+        return True
 
     def disablePower(self):
         """
@@ -824,16 +907,15 @@ class APDS9960(i2c.I2C):
             raise ErrorReadingRegister
             
         #Set bits in register to given value */
-        mode &= 0b00000001;
-        val &= 0b11111110;
-        val |= mode;
+        mode &= 0b00000001
+        val &= 0b11111110
+        val |= mode
     
         try:       
             self.write_bytes(REG_GCONF4, val)
-            return True
         except:
-            return False
-    
+            raise ErrorWritingRegister
+            
     def getGestureMode(self, mode):
         
         """
@@ -870,6 +952,16 @@ class APDS9960(i2c.I2C):
             return True
         else:
             return False
+    
+    def getStatus(self):
+        try:
+            val = self.write_read(REG_STATUS, 1)[0]
+        except:
+            raise ErrorReadingRegister
+            
+        return val
+        
+        
     
     def readGesture(self):
      
@@ -1189,4 +1281,8 @@ class APDS9960(i2c.I2C):
     
         self.gesture_state_ = 0
         self.gesture_motion_ = DIRECTION['DIR_NONE']
+        
+    def _printDEBUG(self, *msg):
+        if DEBUG:
+            print(*msg)
 

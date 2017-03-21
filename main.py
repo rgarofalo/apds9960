@@ -4,39 +4,40 @@
 import streams
 import APDS_9960
 
-import adc
 
 streams.serial()
 
 sleep(1000)
-print("start")
+print("Run Main")
 
 isr_flag = 0
 
 try:
    
     def interruptRoutine():
-        print('sd')
+        print('interruptRoutine')
         isr_flag = 1
 
     pinMode(D26, INPUT_PULLDOWN)
-    onPinRise(D26,interruptRoutine)
 
     sensor = APDS_9960.APDS9960(I2C0)
-    
-    id=sensor.get_device_id()
     sensor.initialize()
-    
     
     if sensor.enableGestureSensor(True):
         print("Gesture sensor is now running")
     else:
         print("Something went wrong during gesture sensor init!")
     
-    print("device ID: ", id )
-    
+
+    print('Register')
+    print('REG_ENABLE ', sensor.getMode())
+    print('REG_GCONF2 ', sensor.getRegGCONF2())
+    print('REG_GCONF4 ', sensor.getRegGCONF4())
+
+    onPinFall(D26,interruptRoutine)
+
     while True:
-        print(digitalRead(D26))
+        print(sensor.getStatus())
         if(isr_flag==1):
             if sensor.isGestureAvailable():
                 gest = sensor.readGesture()
@@ -58,8 +59,7 @@ try:
             else:
                 print('Gesture Disable')
             isr_flag=0
-        sleep(200)
-
+        sleep(500)
 except Exception as e:
     print(e)
 
