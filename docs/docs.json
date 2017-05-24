@@ -1,0 +1,14 @@
+{
+    "files": [
+        [
+            "APDS9960",
+            "APDS9960.py"
+        ],
+        [
+            "main",
+            "main.py"
+        ]
+    ],
+    "title": "APDS-9960",
+    "version": ""
+}
