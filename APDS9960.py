@@ -21,6 +21,8 @@ new_exception(RuntimeErrorSet,ValueError,'Cannot override values')
 new_exception(RuntimeErrorDel,ValueError,'Cannot delete values')
 new_exception(ErrorReadingRegister,RuntimeError,'It was an error while reading the register')
 new_exception(ErrorWritingRegister,RuntimeError,'There was an error writing to the register')
+new_exception(ErrorDevice,RuntimeError,'Error device 0xFF')
+
 
 
 #Debug 
@@ -310,7 +312,6 @@ class APDS9960(i2c.I2C):
             
             self._write_bytes(APDS9960_CONFIG3, DEFAULT_CONFIG3)
             
-            
             # Set default values for gesture sense registers */
             self.setGestureEnterThresh(DEFAULT_GPENTH)
             
@@ -361,11 +362,18 @@ class APDS9960(i2c.I2C):
 
     
     def setMode(self, mode, enable):
+        """ 
+            .. method:: setMode(mode, enable)
+            
+                Enables or disables a feature in the APDS-9960
+                mode: feature to enable
+                enable: ON (1) or OFF (0)
+        """
 
         reg_val = self.getMode()
 
         if reg_val == ERROR :
-            return False
+            raise ErrorDevice
         
         # Change bit(s) in ENABLE register */
         enable = enable & 0x01
@@ -381,11 +389,8 @@ class APDS9960(i2c.I2C):
             else: 
                 reg_val = 0x00
         
-        try:       
-            self._write_bytes(APDS9960_ENABLE,reg_val)
-            return True
-        except:
-            return False
+        self._write_bytes(APDS9960_ENABLE,reg_val)
+       
 
     def enableLightSensor(self, interrupts):
         """
@@ -403,22 +408,17 @@ class APDS9960(i2c.I2C):
         else: 
             self.setAmbientLightIntEnable(0)
                     
-    
         self.enablePower()
         self.setMode(AMBIENT_LIGHT, 1)
-        
-
-
 
     def disableLightSensor(self):
         """
-            .. method:: disableLightSensor(interrupts)
+            .. method:: disableLightSensor()
 
                 Ends the light sensor on the APDS-9960
         """
 
         self.setAmbientLightIntEnable(0)
-    
         self.setMode(AMBIENT_LIGHT, 0)
 
     def enableProximitySensor(self, interrupts):
@@ -431,7 +431,6 @@ class APDS9960(i2c.I2C):
 
         # Set default gain, LED, interrupts, enable power, and enable sensor */
         self.setProximityGain(DEFAULT_PGAIN)
-       
         self.setLEDDrive(DEFAULT_LDRIVE)
        
         if interrupts:
@@ -465,11 +464,11 @@ class APDS9960(i2c.I2C):
                 Set AUX to LED_BOOST_300
                 Enable PON, WEN, PEN, GEN in ENABLE
                 
-                return True if gesture enable. False otherwise.
         """ 
         self.resetGestureParameters()
         self._write_bytes(APDS9960_WTIME, 0xFF)
-    
+        
+        try:
         self._write_bytes(APDS9960_PPULSE, DEFAULT_GESTURE_PPULSE)
     
         self.setLEDBoost(LED_BOOST_300)
@@ -479,44 +478,26 @@ class APDS9960(i2c.I2C):
         else:
             self.setGestureIntEnable(0)
     
-        if not self.setGestureMode(1): 
-            return False
-        
-        if not self.enablePower(self):
-            return False
-        
-        if not self.setMode(WAIT, 1): 
-            return False
-        
-        if not self.setMode(PROXIMITY, 1): 
-            return False
-        
-        if not self.setMode(GESTURE, 1): 
-            return False
-    
+        self.setGestureMode(1)
+        self.enablePower(self)
+        self.setMode(WAIT, 1)
+        self.setMode(PROXIMITY, 1)
+        self.setMode(GESTURE, 1)
 
-        return True
+
 
     def disableGestureSensor(self):
         """
             .. method:: disableGestureSensor()
             
                 Ends the gesture recognition engine on the APDS-9960
-                return True if engine disabled correctly. False on error.
         """
 
-        self.resetGestureParameters(self)
+        self.resetGestureParameters()
+        self.setGestureIntEnable(0) 
+        self.setGestureMode(0)
+        self.setMode(GESTURE, 0):
         
-        if not setGestureIntEnable(0): 
-            return False
-        
-        if not setGestureMode(0): 
-            return False
-        
-        if not self.setMode(GESTURE, 0): 
-            return False
-        
-        return True
         
     def isGestureAvailable(self):
         """ 
@@ -2092,5 +2073,8 @@ class APDS9960(i2c.I2C):
             print(*msg)
 
     def _write_bytes(self,reg , val):
-        self.write_bytes(reg, val)
-        sleep(100)
+        try:   
+            self.write_bytes(reg, val)
+            sleep(100)
+        except:
+            raise ErrorWritingRegister
