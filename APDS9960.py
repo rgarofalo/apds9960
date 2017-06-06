@@ -627,26 +627,21 @@ class APDS9960(i2c.I2C):
             .. method::enablePower()
             
                 Turn the APDS-9960 on
-                return True if operation successful. False otherwise.
+                
         """
 
-        if not self.setMode(POWER, 1): 
-            return False
-
-        return True
+        self.setMode(POWER, 1):
+        
         
     def disablePower(self):
         """
             .. method::disablePower()
                 
                 Turn the APDS-9960 off
-                return True if operation successful. False otherwise.
         """
 
-        if not self.setMode(POWER, 0):
-            return False
+        self.setMode(POWER, 0):
         
-        return True
 
 
 # #******************************************************************************
@@ -655,7 +650,7 @@ class APDS9960(i2c.I2C):
 
     def readAmbientLight(self):
         """
-            .. method:.readAmbientLight()
+            .. method:: readAmbientLight()
             
                 Reads the ambient (clear) light level as a 16-bit value
                 return value of the light sensor.
@@ -671,107 +666,83 @@ class APDS9960(i2c.I2C):
         
 
 
-# #*
-#  * @brief Reads the red light level as a 16-bit value
-#  *
-#  * @param[out] val value of the light sensor.
-#  * @return True if operation successful. False otherwise.
-#  */
-#     def readRedLight(uint16_t &val)
+    def readRedLight(self):
+        """
+            .. method:: readRedLight()
+                
+                Reads the red light level as a 16-bit value
+                return value of the light sensor.
+        """
+        
+      
+         try:
+            valLow = self.write_read(APDS9960_RDATAL, 1)[0]
+            valHight = self.write_read(APDS9960_RDATAH, 1)[0]
+        except:
+            raise ErrorReadingRegister
+                    
+        
+        return valLow + (valHight << 8)
 
-#     uint8_t val_byte
-#     val = 0
+    def readGreenLight(self):
+        """
+            .. method:: readGreenLight()
+                
+                Reads the red light level as a 16-bit value
+                return value of the light sensor.
+        """
+        
+      
+        try:
+            valLow = self.write_read(APDS9960_GDATAL, 1)[0]
+            valHight = self.write_read(APDS9960_GDATAH, 1)[0]
+        except:
+            raise ErrorReadingRegister
+                    
+        
+        return valLow + (valHight << 8)
+        
     
-#     # Read value from clear channel, low byte register */
-#     if not wireReadDataByte(APDS9960_RDATAL, val_byte): 
-#         return False
+    def readBlueLight(self):
+        """
+            .. method:: readBlueLight()
+                
+                Reads the red light level as a 16-bit value
+                return value of the light sensor.
+        """
+        
+        try:
+            valLow = self.write_read(APDS9960_BDATAL, 1)[0]
+            valHight = self.write_read(APDS9960_BDATAH, 1)[0]
+        except:
+            raise ErrorReadingRegister
+                    
+        
+        return valLow + (valHight << 8)
+        
     
-#     val = val_byte
-    
-#     # Read value from clear channel, high byte register */
-#     if not wireReadDataByte(APDS9960_RDATAH, val_byte): 
-#         return False
-    
-#     val = val + ((uint16_t)val_byte << 8)
-    
-#     return True
-
- 
-# #*
-#  * @brief Reads the green light level as a 16-bit value
-#  *
-#  * @param[out] val value of the light sensor.
-#  * @return True if operation successful. False otherwise.
-#  */
-#     def readGreenLight(uint16_t &val)
-
-#     uint8_t val_byte
-#     val = 0
-    
-#     # Read value from clear channel, low byte register */
-#     if not wireReadDataByte(APDS9960_GDATAL, val_byte): 
-#         return False
-    
-#     val = val_byte
-    
-#     # Read value from clear channel, high byte register */
-#     if not wireReadDataByte(APDS9960_GDATAH, val_byte): 
-#         return False
-    
-#     val = val + ((uint16_t)val_byte << 8)
-    
-#     return True
-
-
-# #*
-#  * @brief Reads the red light level as a 16-bit value
-#  *
-#  * @param[out] val value of the light sensor.
-#  * @return True if operation successful. False otherwise.
-#  */
-#     def readBlueLight(uint16_t &val)
-
-#     uint8_t val_byte
-#     val = 0
-    
-#     # Read value from clear channel, low byte register */
-#     if not wireReadDataByte(APDS9960_BDATAL, val_byte): 
-#         return False
-    
-#     val = val_byte
-    
-#     # Read value from clear channel, high byte register */
-#     if not wireReadDataByte(APDS9960_BDATAH, val_byte): 
-#         return False
-    
-#     val = val + ((uint16_t)val_byte << 8)
-    
-#     return True
 
 
-# #******************************************************************************
+#  ******************************************************************************
 #  * Proximity sensor controls
 #  ******************************************************************************/
 
-# #*
-#  * @brief Reads the proximity level as an 8-bit value
-#  *
-#  * @param[out] val value of the proximity sensor.
-#  * @return True if operation successful. False otherwise.
-#  */
-#     def readProximity(uint8_t &val)
 
-#     val = 0
-    
-#     # Read value from proximity data register */
-#     if not wireReadDataByte(APDS9960_PDATA, val): 
-#         return False
-    
-    
-#     return True
-
-
-#
+    def readProximity(self):
+        """
+            .. method:: readProximity():
+            
+                Reads the proximity level as an 8-bit value
+                Return value of the proximity sensor.
+        """
+        
+        try:
+            val = self.write_read(APDS9960_PDATA, 1)[0]
+        except:
+            raise ErrorReadingRegister
+                    
+        
+        return val
    
     
     def _processGestureData(self):
@@ -1011,91 +982,88 @@ class APDS9960(i2c.I2C):
 #  *
 #  * @return lower threshold
 #  */
-#     def getProxIntLowThresh(self):
-
-#     uint8_t val
-    
-#     # Read value from PILT register */
-#     if not wireReadDataByte(APDS9960_PILT, val): 
-#         val = 0
-    
-    
-#     return val
-
-
-# #*
-#  * @brief Sets the lower threshold for proximity detection
-#  *
-#  * @param[in] threshold the lower proximity threshold
-#  * @return True if operation successful. False otherwise.
-#  */
+    def getProxIntLowThresh(self):
+        """
+            ..method:: getProxIntLowThresh()
+            
+                Returns the lower threshold for proximity detection
+            
+        """
+        
+        try:
+            val = self.write_read(APDS9960_PILT, 1)[0]
+        except:
+            raise ErrorReadingRegister
+                    
+        
+        return val
+  
     def setProxIntLowThresh(self, threshold):
-    
+        """
+            ..method:: getProxIntLowThresh(threshold)
+                
+                Sets the lower threshold for proximity detection
+        """
+        
+        
         self._write_bytes(APDS9960_PILT, threshold)
-
-    
-    
-#     return True
+        
+ 
 
 
-# #*
-#  * @brief Returns the high threshold for proximity detection
-#  *
-#  * @return high threshold
-#  */
-#     def getProxIntHighThresh(self):
+    def getProxIntHighThresh(self):
+        """
+            ..method:: getProxIntHighThresh()
+            
+                Returns the high threshold for proximity detection
+            
+        """
+        
+        try:
+            val = self.write_read(APDS9960_PIHT, 1)[0]
+        except:
+            raise ErrorReadingRegister
+                    
+        return val
 
-#     uint8_t val
-    
-#     # Read value from PIHT register */
-#     if not wireReadDataByte(APDS9960_PIHT, val): 
-#         val = 0
-    
-    
-#     return val
 
-
-# #*
-#  * @brief Sets the high threshold for proximity detection
-#  *
-#  * @param[in] threshold the high proximity threshold
-#  * @return True if operation successful. False otherwise.
-#  */
     def setProxIntHighThresh(self, threshold):
+        """
+            ..method:: setProxIntHighThresh(threshold)
+            
+                Sets the high threshold for proximity detection
+            
+        """
 
         self._write_bytes(APDS9960_PIHT, threshold)
             
-#         return False
-    
-    
-#     return True
 
+     def getLEDDrive(self):
+         """
+            ..method:: getLEDDrive()
+                
+                Returns LED drive strength for proximity and ALS
 
-#*
- # * @brief Returns LED drive strength for proximity and ALS
- # *
- # * Value    LED Current
- # *   0        100 mA
- # *   1         50 mA
- # *   2         25 mA
- # *   3         12.5 mA
- # *
- # * @return the value of the LED drive strength. 0xFF on failure.
- # */
- #    def getLEDDrive(self):
+                Value    LED Current
+                  0        100 mA
+                  1         50 mA
+                  2         25 mA
+                  3         12.5 mA
+                
+         """
 
- #    uint8_t val
-    
- #    # Read value from CONTROL register */
- #    if not wireReadDataByte(APDS9960_CONTROL, val): 
- #        return ERROR
-    
-    
- #    # Shift and mask out LED drive bits */
- #    val = (val >> 6) & 0b00000011
-    
- #    return val
+        try:
+            val = self.write_read(APDS9960_CONTROL, 1)[0]
+        except:
+            raise ErrorReadingRegister
+                    
 
+        
+        
+         # Shift and mask out LED drive bits */
+        return (val >> 6) & 0b00000011
+        
+         
 
 
     def setLEDDrive(self, drive):
@@ -1285,11 +1253,15 @@ class APDS9960(i2c.I2C):
 
 
     def setLEDBoost(self, boost):
+        """
+            .. method:: setLEDBoost(boost)
+        """
         #Read value from CONFIG2 register
         try:
             val = self.write_read(APDS9960_CONFIG2, 1)[0]
         except:
-            return ERROR
+            raise ErrorReadingRegister
+            
         # Set bits in register to given value
         boost &= 0b00000011
         boost = boost << 4
@@ -1299,84 +1271,84 @@ class APDS9960(i2c.I2C):
         # Write register value back into CONFIG2 register
         try:       
             self._write_bytes(APDS9960_CONFIG2, val)
-            return True
         except:
-            return False
-
-# #*
-#  * @brief Gets proximity gain compensation enable
-#  *
-#  * @return 1 if compensation is enabled. 0 if not. 0xFF on error.
-#  */
-#     def getProxGainCompEnable(self):
-
-#     uint8_t val
-    
-#     # Read value from CONFIG3 register */
-#     if not wireReadDataByte(APDS9960_CONFIG3, val): 
-#         return ERROR
-    
-    
-#     # Shift and mask out PCMP bits */
-#     val = (val >> 5) & 0b00000001
-    
-#     return val
+            raise ErrorWritingRegister
 
 
-#*
- # * @brief Sets the proximity gain compensation enable
- # *
- # * @param[in] enable 1 to enable compensation. 0 to disable compensation.
- # * @return True if operation successful. False otherwise.
- # */
- #     def setProxGainCompEnable(uint8_t enable)
-
- #    uint8_t val
-    
- #    # Read value from CONFIG3 register */
- #    if not wireReadDataByte(APDS9960_CONFIG3, val): 
- #        return False
-    
-    
- #    # Set bits in register to given value */
- #    enable &= 0b00000001
- #    enable = enable << 5
- #    val &= 0b11011111
- #    val |= enable
-    
- #    # Write register value back into CONFIG3 register */
- #    self._write_bytes(APDS9960_CONFIG3, val): 
- #        return False
-    
-    
- #    return True
+    def getProxGainCompEnable(self):
+        """
+            ..method:: getProxGainCompEnable()
+                
+                Gets proximity gain compensation enable
+                return 1 if compensation is enabled. 0 if not. 
+            
+        """
+        
+        try:
+            val = self.write_read(APDS9960_CONFIG3, 1)[0]
+        except:
+            raise ErrorReadingRegister 
+            
+         # Shift and mask out PCMP bits */
+        val = (val >> 5) & 0b00000001
+        
+        return val
 
 
-#*
-#  * @brief Gets the current mask for enabled/disabled proximity photodiodes
-#  *
-#  * 1 = disabled, 0 = enabled
-#  * Bit    Photodiode
-#  *  3       UP
-#  *  2       DOWN
-#  *  1       LEFT
-#  *  0       RIGHT
-#  *
-#  * @return Current proximity mask for photodiodes. 0xFF on error.
-#  */
-#     def getProxPhotoMask(self):
+  
+     def setProxGainCompEnable(self, enable):
+         """
+            ..method:: setProxGainCompEnable(enable)
+                
+                Sets the proximity gain compensation enable
+                enable 1 to enable compensation. 0 to disable compensation.
+            
+         """
+         
+        try:
+            val = self.write_read(APDS9960_CONFIG3, 1)[0]
+        except:
+            raise ErrorReadingRegister
+            
+        # Set bits in register to given value */
+        enable &= 0b00000001
+        enable = enable << 5
+        val &= 0b11011111
+        val |= enable
+    
+        # Write register value back into CONFIG2 register
+        try:       
+            self._write_bytes(APDS9960_CONFIG3, val)
+        except:
+            raise ErrorWritingRegister
 
-#     uint8_t val
-    
-#     # Read value from CONFIG3 register */
-#     if not wireReadDataByte(APDS9960_CONFIG3, val): 
-#         return ERROR
-    
-    
-#     # Mask out photodiode enable mask bits */
-#     val &= 0b00001111
-    
-#     return val
+   
+
+    def getProxPhotoMask(self):
+        """
+            ..method:: getProxPhotoMask()
+            
+                Gets the current mask for enabled/disabled proximity photodiodes
+                
+                1 = disabled, 0 = enabled
+                Bit    Photodiode
+                 3       UP
+                 2       DOWN
+                 1       LEFT
+                 0       RIGHT
+            
+        """
+        
+        try:
+            val = self.write_read(APDS9960_CONFIG3, 1)[0]
+        except:
+            raise ErrorReadingRegister 
+            
+        
+        # Mask out photodiode enable mask bits */
+        val &= 0b00001111
+        
+        return val
 
 
 # #*
