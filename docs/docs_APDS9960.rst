@@ -16,11 +16,16 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
 .. method:: getMode()
 
     Reads and returns the contents of the ENABLE register
+.. method:: setMode(mode, enable)
+
+    Enables or disables a feature in the APDS-9960
+    mode: feature to enable
+    enable: ON (1) or OFF (0)
 .. method:: enableLightSensor(interrupts)
 
     Starts the light (R/G/B/Ambient) sensor on the APDS-9960
     interrupts True to enable hardware interrupt on high or low light
-.. method:: disableLightSensor(interrupts)
+.. method:: disableLightSensor()
 
     Ends the light sensor on the APDS-9960
 .. method:: enableProximitySensor(interrupts)
@@ -40,11 +45,9 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
     Set AUX to LED_BOOST_300
     Enable PON, WEN, PEN, GEN in ENABLE
     
-    return True if gesture enable. False otherwise.
 .. method:: disableGestureSensor()
 
     Ends the gesture recognition engine on the APDS-9960
-    return True if engine disabled correctly. False on error.
 .. method:: isGestureAvailable()
     
     Determines if there is a gesture available for reading
@@ -56,15 +59,52 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
 .. method::enablePower()
 
     Turn the APDS-9960 on
-    return True if operation successful. False otherwise.
+    
 .. method::disablePower()
     
     Turn the APDS-9960 off
-    return True if operation successful. False otherwise.
-.. method:.readAmbientLight()
+.. method:: readAmbientLight()
 
     Reads the ambient (clear) light level as a 16-bit value
     return value of the light sensor.
+.. method:: readRedLight()
+    
+    Reads the red light level as a 16-bit value
+    return value of the light sensor.
+.. method:: readGreenLight()
+    
+    Reads the red light level as a 16-bit value
+    return value of the light sensor.
+.. method:: readBlueLight()
+    
+    Reads the red light level as a 16-bit value
+    return value of the light sensor.
+.. method:: readProximity()
+
+    Reads the proximity level as an 8-bit value
+    Return value of the proximity sensor.
+.. method:: getProxIntLowThresh()
+
+    Returns the lower threshold for proximity detection
+.. method:: getProxIntLowThresh(threshold)
+    
+    Sets the lower threshold for proximity detection
+.. method:: getProxIntHighThresh()
+
+    Returns the high threshold for proximity detection
+.. method:: setProxIntHighThresh(threshold)
+
+    Sets the high threshold for proximity detection
+.. method:: getLEDDrive()
+    
+    Returns LED drive strength for proximity and ALS
+
+    Value    LED Current
+      0        100 mA
+      1         50 mA
+      2         25 mA
+      3         12.5 mA
+    
 .. method:: setLEDDrive(drive)
 
     brief Sets the LED drive strength for proximity and ALS
@@ -133,6 +173,56 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
       3        300%
  
      return the LED boost value.
+.. method:: setLEDBoost(boost)
+.. method:: getProxGainCompEnable()
+    
+    Gets proximity gain compensation enable
+    return 1 if compensation is enabled. 0 if not. 
+.. method:: setProxGainCompEnable(enable)
+    
+    Sets the proximity gain compensation enable
+    enable 1 to enable compensation. 0 to disable compensation.
+.. method:: getProxPhotoMask()
+
+    Gets the current mask for enabled/disabled proximity photodiodes
+    
+    1 = disabled, 0 = enabled
+    Bit    Photodiode
+     3       UP
+     2       DOWN
+     1       LEFT
+     0       RIGHT
+.. method:: setProxPhotoMask(mask)
+
+    Sets the mask for enabling/disabling proximity photodiodes
+    
+    1 = disabled, 0 = enabled
+    
+    Bit    Photodiode
+     3       UP
+     2       DOWN
+     1       LEFT
+     0       RIGHT
+.. method:: getGestureEnterThresh()
+    
+    Gets the entry proximity threshold for gesture sensing
+    Return Current entry proximity threshold.
+    
+    
+.. method:: setGestureEnterThresh(threshold)
+    
+    Sets the entry proximity threshold for gesture sensing
+    threshold: proximity value needed to start gesture mode
+    
+.. method:: getGestureExitThresh()
+    
+    Gets the exit proximity threshold for gesture sensing
+.. method:: setGestureExitThresh(threshold)
+    
+    Sets the exit proximity threshold for gesture sensing
+    threshold: proximity value needed to end gesture mode
+    
+    
 .. method:: getGestureGain()
 
     Gets the gain of the photodiode during gesture mode
@@ -192,38 +282,77 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
  
     return the current wait time between gestures.
 .. method:: setGestureWaitTime(time)
+
     Sets the time in low power mode between gesture detections
- 
-        Value    Wait time
-          0          0 ms
-          1          2.8 ms
-          2          5.6 ms
-          3          8.4 ms
-          4         14.0 ms
-          5         22.4 ms
-          6         30.8 ms
-          7         39.2 ms
+
+        +----------+-------------+
+        |  Value   |  Wait time  |
+        +==========+:============+
+        |    0     |     0 ms    |
+        +----------+-------------+
+        |    1     |     2.8 ms  |
+        +----------+-------------+
+        |    2     |     5.6 ms  |
+        +----------+-------------+
+        |    3     |     8.4 ms  |
+        +----------+-------------+
+        |    4     |    14.0 ms  |
+        +----------+-------------+
+        |    5     |    22.4 ms  |
+        +----------+-------------+
+        |    6     |    30.8 ms  |
+        +----------+-------------+
+        |    7     |    39.2 ms  |
+        +----------+-------------+
  
     the value for the wait time
+.. method:: getLightIntLowThreshold()
+    
+    Gets the low threshold for ambient light interrupts
+    Return threshold current low threshold stored on the APDS-9960
+    
 .. method:: setLightIntLowThreshold(threshold)
 
     Sets the low threshold for ambient light interrupts
     threshold low threshold value for interrupt to trigger
+.. method:: getLightIntHighThreshold()
+
+    Gets the high threshold for ambient light interrupts
+    threshold: current low threshold stored on the APDS-9960
 .. method:: setLightIntHighThreshold(threshold)
     
     Sets the low threshold for ambient light interrupts
     threshold low threshold value for interrupt to trigger
+.. method:: getProximityIntLowThreshold()
+    
+    Gets the low threshold for proximity interrupts
+.. method:: setProximityIntLowThreshold(threshold)
+
+    Sets the low threshold for proximity interrupts
+    threshold: low threshold value for interrupt to trigger
+.. method:: getProximityIntHighThreshold()
+    
+   Gets the high threshold for proximity interrupts
+.. method:: setProximityIntHighThreshold(threshold)
+    
+    Sets the high threshold for proximity interrupts
+    threshold: high threshold value for interrupt to trigger
+.. method:: getAmbientLightIntEnable()
+    
+    Gets if ambient light interrupts are enabled or not
+    Return 1 if interrupts are enabled, 0 if not.
 .. method:: setAmbientLightIntEnable(enable)
     
     Turns ambient light interrupts on or off
-
     enable 1 to enable interrupts, 0 to turn them off
-    return True if operation successful. False otherwise.
+.. method:: getProximityIntEnable()
+    
+    Gets if proximity interrupts are enabled or not
+    Return 1 if interrupts are enabled, 0 if not.
 .. method:: setProximityIntEnable(enable)
 
     Turns proximity interrupts on or off
     enable 1 to enable interrupts, 0 to turn them off
-    return True if operation successful. False otherwise.
 .. method:: getGestureIntEnable()
 
     Gets if gesture interrupts are enabled or not
@@ -232,7 +361,6 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
 
     Turns gesture-related interrupts on or off
     enable 1 to enable interrupts, 0 to turn them off
-    return True if operation successful.
 .. method:: setGestureMode(mode)
 
     Tells the state machine to either enter or exit gesture state machine

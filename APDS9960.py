@@ -468,7 +468,6 @@ class APDS9960(i2c.I2C):
         self.resetGestureParameters()
         self._write_bytes(APDS9960_WTIME, 0xFF)
         
-        try:
         self._write_bytes(APDS9960_PPULSE, DEFAULT_GESTURE_PPULSE)
     
         self.setLEDBoost(LED_BOOST_300)
@@ -496,7 +495,7 @@ class APDS9960(i2c.I2C):
         self.resetGestureParameters()
         self.setGestureIntEnable(0) 
         self.setGestureMode(0)
-        self.setMode(GESTURE, 0):
+        self.setMode(GESTURE, 0)
         
         
     def isGestureAvailable(self):
@@ -630,7 +629,7 @@ class APDS9960(i2c.I2C):
                 
         """
 
-        self.setMode(POWER, 1):
+        self.setMode(POWER, 1)
         
         
     def disablePower(self):
@@ -640,7 +639,7 @@ class APDS9960(i2c.I2C):
                 Turn the APDS-9960 off
         """
 
-        self.setMode(POWER, 0):
+        self.setMode(POWER, 0)
         
 
 
@@ -675,7 +674,7 @@ class APDS9960(i2c.I2C):
         """
         
       
-         try:
+        try:
             valLow = self.write_read(APDS9960_RDATAL, 1)[0]
             valHight = self.write_read(APDS9960_RDATAH, 1)[0]
         except:
@@ -694,6 +693,7 @@ class APDS9960(i2c.I2C):
         
       
         try:
+        
             valLow = self.write_read(APDS9960_GDATAL, 1)[0]
             valHight = self.write_read(APDS9960_GDATAH, 1)[0]
         except:
@@ -730,7 +730,7 @@ class APDS9960(i2c.I2C):
 
     def readProximity(self):
         """
-            .. method:: readProximity():
+            .. method:: readProximity()
             
                 Reads the proximity level as an 8-bit value
                 Return value of the proximity sensor.
@@ -977,14 +977,9 @@ class APDS9960(i2c.I2C):
 #  * Getters and setters for register values
 #  ******************************************************************************/
 
-# #*
-#  * @brief Returns the lower threshold for proximity detection
-#  *
-#  * @return lower threshold
-#  */
     def getProxIntLowThresh(self):
         """
-            ..method:: getProxIntLowThresh()
+            .. method:: getProxIntLowThresh()
             
                 Returns the lower threshold for proximity detection
             
@@ -1000,7 +995,7 @@ class APDS9960(i2c.I2C):
   
     def setProxIntLowThresh(self, threshold):
         """
-            ..method:: getProxIntLowThresh(threshold)
+            .. method:: getProxIntLowThresh(threshold)
                 
                 Sets the lower threshold for proximity detection
         """
@@ -1013,7 +1008,7 @@ class APDS9960(i2c.I2C):
 
     def getProxIntHighThresh(self):
         """
-            ..method:: getProxIntHighThresh()
+            .. method:: getProxIntHighThresh()
             
                 Returns the high threshold for proximity detection
             
@@ -1029,7 +1024,7 @@ class APDS9960(i2c.I2C):
 
     def setProxIntHighThresh(self, threshold):
         """
-            ..method:: setProxIntHighThresh(threshold)
+            .. method:: setProxIntHighThresh(threshold)
             
                 Sets the high threshold for proximity detection
             
@@ -1038,19 +1033,20 @@ class APDS9960(i2c.I2C):
         self._write_bytes(APDS9960_PIHT, threshold)
             
 
-     def getLEDDrive(self):
-         """
-            ..method:: getLEDDrive()
+    def getLEDDrive(self):
+        """
+            .. method:: getLEDDrive()
                 
                 Returns LED drive strength for proximity and ALS
-
-                Value    LED Current
+                
+                +------+-------------+
+                |Value    LED Current
                   0        100 mA
                   1         50 mA
                   2         25 mA
                   3         12.5 mA
                 
-         """
+        """
 
         try:
             val = self.write_read(APDS9960_CONTROL, 1)[0]
@@ -1058,13 +1054,8 @@ class APDS9960(i2c.I2C):
             raise ErrorReadingRegister
                     
 
-        
-        
          # Shift and mask out LED drive bits */
         return (val >> 6) & 0b00000011
-        
-         
-
 
     def setLEDDrive(self, drive):
         """
@@ -1110,11 +1101,17 @@ class APDS9960(i2c.I2C):
             
                 Returns receiver gain for proximity detection
                  
-                  Value    Gain
-                    0       1x
-                    1       2x
-                    2       4x
-                    3       8x
+                +--------+---------+
+                |  Value |  Gain   |
+                +========+=========+
+                |    0   |    1x   |
+                +--------+---------+
+                |    1   |    2x   |
+                +--------+---------+
+                |    2   |    4x   |
+                +--------+---------+
+                |    3   |    8x   |
+                +--------+---------+
                  
                   return the value of the proximity gain.
         """
@@ -1137,11 +1134,18 @@ class APDS9960(i2c.I2C):
             
                 Sets the receiver gain for proximity detection
                 
-                 Value    Gain
-                   0       1x
-                   1       2x
-                   2       4x
-                   3       8x
+                +--------+---------+
+                |  Value |  Gain   |
+                +========+=========+
+                |    0   |    1x   |
+                +--------+---------+
+                |    1   |    2x   |
+                +--------+---------+
+                |    2   |    4x   |
+                +--------+---------+
+                |    3   |    8x   |
+                +--------+---------+
+                
                 
                 drive the value (0-3) for the gain
                 return True if operation successful.
@@ -1174,12 +1178,19 @@ class APDS9960(i2c.I2C):
             .. method:: getAmbientLightGain()
             
                 Returns receiver gain for the ambient light sensor (ALS)
-             
-                    Value    Gain
-                      0        1x
-                      1        4x
-                      2       16x
-                      3       64x
+            
+                +--------+---------+
+                |  Value |  Gain   |
+                +========+=========+
+                |    0   |    1x   |
+                +--------+---------+
+                |    1   |    4x   |
+                +--------+---------+
+                |    2   |    16x  |
+                +--------+---------+
+                |    3   |    64x  |
+                +--------+---------+
+                
             
                 return the value of the ALS gain. 0xFF on failure.
         """
@@ -1200,11 +1211,18 @@ class APDS9960(i2c.I2C):
             
                 Sets the receiver gain for the ambient light sensor (ALS)
              
-                  Value    Gain
-                    0        1x
-                    1        4x
-                    2       16x
-                    3       64x
+                +--------+---------+
+                |  Value |  Gain   |
+                +========+=========+
+                |    0   |    1x   |
+                +--------+---------+
+                |    1   |    4x   |
+                +--------+---------+
+                |    2   |    16x  |
+                +--------+---------+
+                |    3   |    64x  |
+                +--------+---------+
+                
                  
                 drive the value (0-3) for the gain
                 return True if operation successful. False otherwise.
@@ -1232,13 +1250,22 @@ class APDS9960(i2c.I2C):
             .. method:: getLEDBoost()
             
                 brief Get the current LED boost value
-                Value  Boost Current
-                  0        100%
-                  1        150%
-                  2        200%
-                  3        300%
-             
-                 return the LED boost value.
+                
+                +-------+----------------+
+                | Value | Boost Current  |
+                +=======+================+
+                |  0    |  100%          |
+                +-------+----------------+
+                |  1    |  150%          |
+                +-------+----------------+
+                |  2    |  200%          |
+                +-------+----------------+
+                |  3    |  300%          |
+                +-------+----------------+
+                
+                  
+                  
+                return the LED boost value.
         """
         
         #Read value from CONFIG2 register
@@ -1277,7 +1304,7 @@ class APDS9960(i2c.I2C):
 
     def getProxGainCompEnable(self):
         """
-            ..method:: getProxGainCompEnable()
+            .. method:: getProxGainCompEnable()
                 
                 Gets proximity gain compensation enable
                 return 1 if compensation is enabled. 0 if not. 
@@ -1296,14 +1323,14 @@ class APDS9960(i2c.I2C):
 
 
   
-     def setProxGainCompEnable(self, enable):
-         """
-            ..method:: setProxGainCompEnable(enable)
+    def setProxGainCompEnable(self, enable):
+        """
+            .. method:: setProxGainCompEnable(enable)
                 
                 Sets the proximity gain compensation enable
                 enable 1 to enable compensation. 0 to disable compensation.
             
-         """
+        """
          
         try:
             val = self.write_read(APDS9960_CONFIG3, 1)[0]
@@ -1326,16 +1353,23 @@ class APDS9960(i2c.I2C):
 
     def getProxPhotoMask(self):
         """
-            ..method:: getProxPhotoMask()
+            .. method:: getProxPhotoMask()
             
                 Gets the current mask for enabled/disabled proximity photodiodes
                 
                 1 = disabled, 0 = enabled
-                Bit    Photodiode
-                 3       UP
-                 2       DOWN
-                 1       LEFT
-                 0       RIGHT
+                
+                +-----+-----------------+
+                | Bit |   Photodiode    |
+                +=====+=================+
+                | 3   |    UP           |
+                +-----+-----------------+
+                | 2   |    DOWN         |
+                +-----+-----------------+
+                | 1   |    LEFT         |
+                +-----+-----------------+
+                | 0   |    RIGHT        |
+                +-----+-----------------+
             
         """
         
@@ -1351,105 +1385,113 @@ class APDS9960(i2c.I2C):
         return val
 
 
-# #*
-#  * @brief Sets the mask for enabling/disabling proximity photodiodes
-#  *
-#  * 1 = disabled, 0 = enabled
-#  * Bit    Photodiode
-#  *  3       UP
-#  *  2       DOWN
-#  *  1       LEFT
-#  *  0       RIGHT
-#  *
-#  * @param[in] mask 4-bit mask value
-#  * @return True if operation successful. False otherwise.
-#  */
-#     def setProxPhotoMask(uint8_t mask)
 
-#     uint8_t val
-    
-#     # Read value from CONFIG3 register */
-#     if not wireReadDataByte(APDS9960_CONFIG3, val): 
-#         return False
-    
-    
-#     # Set bits in register to given value */
-#     mask &= 0b00001111
-#     val &= 0b11110000
-#     val |= mask
-    
-#     # Write register value back into CONFIG3 register */
-#     self._write_bytes(APDS9960_CONFIG3, val): 
-#         return False
-    
-    
-#     return True
+    def setProxPhotoMask(self, mask):
+        """
+            .. method:: setProxPhotoMask(mask)
+            
+                Sets the mask for enabling/disabling proximity photodiodes
+                
+                1 = disabled, 0 = enabled
+                
+                +-----+-----------------+
+                | Bit |   Photodiode    |
+                +=====+=================+
+                | 3   |    UP           |
+                +-----+-----------------+
+                | 2   |    DOWN         |
+                +-----+-----------------+
+                | 1   |    LEFT         |
+                +-----+-----------------+
+                | 0   |    RIGHT        |
+                +-----+-----------------+
 
-
-#*
-#  * @brief Gets the entry proximity threshold for gesture sensing
-#  *
-#  * @return Current entry proximity threshold.
-#  */
-#     def getGestureEnterThresh(self):
-
-#     uint8_t val
+            
+        """
+        
+        try:
+            val = self.write_read(APDS9960_CONFIG3, 1)[0]
+        except:
+            raise ErrorReadingRegister 
+            
+        
+        # Set bits in register to given value */
+        mask &= 0b00001111
+        val &= 0b11110000
+        val |= mask
     
-#     # Read value from GPENTH register */
-#     if not wireReadDataByte(APDS9960_GPENTH, val): 
-#         val = 0
-    
-    
-#     return val
+        try:       
+            self._write_bytes(APDS9960_CONFIG3, val)
+        except:
+            raise ErrorWritingRegister
 
 
-# #*
-#  * @brief Sets the entry proximity threshold for gesture sensing
-#  *
-#  * @param[in] threshold proximity value needed to start gesture mode
-#  * @return True if operation successful. False otherwise.
-#  */
+    def getGestureEnterThresh(self):
+        """
+            .. method:: getGestureEnterThresh()
+                
+                Gets the entry proximity threshold for gesture sensing
+                Return Current entry proximity threshold.
+                
+                
+        """
+        
+        
+        try:
+            val = self.write_read(APDS9960_GPENTH, 1)[0]
+        except:
+            raise ErrorReadingRegister 
+        
+        return val
+
+
     def setGestureEnterThresh(self, threshold):
+        """
+            .. method:: setGestureEnterThresh(threshold)
+                
+                Sets the entry proximity threshold for gesture sensing
+                threshold: proximity value needed to start gesture mode
+                
+        """
 
-        self._write_bytes(APDS9960_GPENTH, threshold)
-#         return False
-    
-    
-#     return True
-
-
-#*
-#  * @brief Gets the exit proximity threshold for gesture sensing
-#  *
-#  * @return Current exit proximity threshold.
-#  */
-#     def getGestureExitThresh(self):
-
-#     uint8_t val
-    
-#     # Read value from GEXTH register */
-#     if not wireReadDataByte(APDS9960_GEXTH, val): 
-#         val = 0
-    
-    
-#     return val
+        try:       
+            self._write_bytes(APDS9960_GPENTH, threshold)
+        except:
+            raise ErrorWritingRegister
 
 
-# #*
-#  * @brief Sets the exit proximity threshold for gesture sensing
-#  *
-#  * @param[in] threshold proximity value needed to end gesture mode
-#  * @return True if operation successful. False otherwise.
-#  */
+
+    def getGestureExitThresh(self):
+        """
+            .. method:: getGestureExitThresh()
+                
+                Gets the exit proximity threshold for gesture sensing
+        """
+        
+        try:
+            val = self.write_read(APDS9960_GEXTH, 1)[0]
+        except:
+            raise ErrorReadingRegister 
+        
+        return val
+
+
     def setGestureExitThresh(self, threshold):
-        self._write_bytes(APDS9960_GEXTH, threshold) 
-#         return False
-    
-    
-#     return True
-
-
-#*
+        """
+            .. method:: setGestureExitThresh(threshold)
+                
+                Sets the exit proximity threshold for gesture sensing
+                threshold: proximity value needed to end gesture mode
+                
+                
+        """
+        
+        
+        try:       
+            self._write_bytes(APDS9960_GEXTH, threshold)
+        except:
+            raise ErrorWritingRegister
+      
 
 
     def getGestureGain(self):
@@ -1458,11 +1500,17 @@ class APDS9960(i2c.I2C):
             
                 Gets the gain of the photodiode during gesture mode
                 
-                  Value    Gain
-                    0       1x
-                    1       2x
-                    2       4x
-                    3       8x
+                   +--------+----------+
+                    | Value  |  Gain    |
+                    +========+==========+
+                    |  0     |  1x      |
+                    +--------+----------+
+                    |  1     |  2x      |
+                    +--------+----------+
+                    |  2     |  4x      |
+                    +--------+----------+
+                    |  3     |  8x      |
+                    +--------+----------+
                     
                 return the current photodiode gain.
         """
@@ -1483,12 +1531,18 @@ class APDS9960(i2c.I2C):
             
                 Sets the gain of the photodiode during gesture mode
              
-                    Value    Gain
-                      0       1x
-                      1       2x
-                      2       4x
-                      3       8x
-             
+                    +--------+----------+
+                    | Value  |  Gain    |
+                    +========+==========+
+                    |  0     |  1x      |
+                    +--------+----------+
+                    |  1     |  2x      |
+                    +--------+----------+
+                    |  2     |  4x      |
+                    +--------+----------+
+                    |  3     |  8x      |
+                    +--------+----------+
+            
                 gain the value for the photodiode gain
 
         """
@@ -1517,11 +1571,18 @@ class APDS9960(i2c.I2C):
             
                 Gets the drive current of the LED during gesture mode
              
-                  Value    LED Current
-                    0        100 mA
-                    1         50 mA
-                    2         25 mA
-                    3         12.5 mA
+                    +--------+--------------+
+                    | Value  |  LED Current |
+                    +========+==============+
+                    |  0     |   100 mA     |
+                    +--------+--------------+
+                    |  1     |    50 mA     |
+                    +--------+--------------+
+                    |  2     |    25 mA     |
+                    +--------+--------------+
+                    |  3     |    12.5 mA   |
+                    +--------+--------------+
+
              
                return the LED drive current value.
         """
@@ -1540,12 +1601,19 @@ class APDS9960(i2c.I2C):
             .. method:: setGestureLEDDrive(drive)
                 
                 Sets the LED drive current during gesture mode
-             
-                    Value    LED Current
-                      0        100 mA
-                      1         50 mA
-                      2         25 mA
-                      3         12.5 mA
+                    +--------+--------------+
+                    | Value  |  LED Current |
+                    +========+==============+
+                    |  0     |   100 mA     |
+                    +--------+--------------+
+                    |  1     |    50 mA     |
+                    +--------+--------------+
+                    |  2     |    25 mA     |
+                    +--------+--------------+
+                    |  3     |    12.5 mA   |
+                    +--------+--------------+
+
+
              
                 drive the value for the LED drive current
         """
@@ -1574,15 +1642,25 @@ class APDS9960(i2c.I2C):
             .. method: getGestureWaitTime
                 Gets the time in low power mode between gesture detections
              
-                    Value    Wait time
-                      0          0 ms
-                      1          2.8 ms
-                      2          5.6 ms
-                      3          8.4 ms
-                      4         14.0 ms
-                      5         22.4 ms
-                      6         30.8 ms
-                      7         39.2 ms
+                    +----------+-------------+
+                    |  Value   |  Wait time  |
+                    +==========+=============+
+                    |    0     |     0 ms    |
+                    +----------+-------------+
+                    |    1     |     2.8 ms  |
+                    +----------+-------------+
+                    |    2     |     5.6 ms  |
+                    +----------+-------------+
+                    |    3     |     8.4 ms  |
+                    +----------+-------------+
+                    |    4     |    14.0 ms  |
+                    +----------+-------------+
+                    |    5     |    22.4 ms  |
+                    +----------+-------------+
+                    |    6     |    30.8 ms  |
+                    +----------+-------------+
+                    |    7     |    39.2 ms  |
+                    +----------+-------------+
              
                 return the current wait time between gestures.
         """
@@ -1601,16 +1679,26 @@ class APDS9960(i2c.I2C):
             .. method:: setGestureWaitTime(time)
             
                 Sets the time in low power mode between gesture detections
-             
-                    Value    Wait time
-                      0          0 ms
-                      1          2.8 ms
-                      2          5.6 ms
-                      3          8.4 ms
-                      4         14.0 ms
-                      5         22.4 ms
-                      6         30.8 ms
-                      7         39.2 ms
+
+                    +----------+-------------+
+                    |  Value   |  Wait time  |
+                    +==========+=============+
+                    |    0     |     0 ms    |
+                    +----------+-------------+
+                    |    1     |     2.8 ms  |
+                    +----------+-------------+
+                    |    2     |     5.6 ms  |
+                    +----------+-------------+
+                    |    3     |     8.4 ms  |
+                    +----------+-------------+
+                    |    4     |    14.0 ms  |
+                    +----------+-------------+
+                    |    5     |    22.4 ms  |
+                    +----------+-------------+
+                    |    6     |    30.8 ms  |
+                    +----------+-------------+
+                    |    7     |    39.2 ms  |
+                    +----------+-------------+
              
                 the value for the wait time
         """
@@ -1638,28 +1726,25 @@ class APDS9960(i2c.I2C):
 #  * @param[out] threshold current low threshold stored on the APDS-9960
 #  * @return True if operation successful. False otherwise.
 #  */
-#     def getLightIntLowThreshold(uint16_t &threshold)
+    def getLightIntLowThreshold(self):
+        """
+            .. method:: getLightIntLowThreshold()
+                
+                Gets the low threshold for ambient light interrupts
+                Return threshold current low threshold stored on the APDS-9960
+                
+        """
+        
+        try:
+            valLow = self.write_read(APDS9960_AILTL, 1)[0]
+            valHight = self.write_read(APDS9960_AILTH, 1)[0]
+        except:
+            raise ErrorReadingRegister
+                    
+        
+        return valLow + (valHight << 8)
 
-#     uint8_t val_byte
-#     threshold = 0
     
-#     # Read value from ambient light low threshold, low byte register */
-#     if not wireReadDataByte(APDS9960_AILTL, val_byte): 
-#         return False
-    
-#     threshold = val_byte
-    
-#     # Read value from ambient light low threshold, high byte register */
-#     if not wireReadDataByte(APDS9960_AILTH, val_byte): 
-#         return False
-    
-#     threshold = threshold + ((uint16_t)val_byte << 8)
-    
-#     return True
-
-
-# #*
-
 
     def setLightIntLowThreshold(self, threshold):
         """
@@ -1687,31 +1772,26 @@ class APDS9960(i2c.I2C):
  
   
 
-# #*
-#  * @brief Gets the high threshold for ambient light interrupts
-#  *
-#  * @param[out] threshold current low threshold stored on the APDS-9960
-#  * @return True if operation successful. False otherwise.
-#  */
-#     def getLightIntHighThreshold(uint16_t &threshold)
 
-#     uint8_t val_byte
-#     threshold = 0
-    
-#     # Read value from ambient light high threshold, low byte register */
-#     if not wireReadDataByte(APDS9960_AIHTL, val_byte): 
-#         return False
-    
-#     threshold = val_byte
-    
-#     # Read value from ambient light high threshold, high byte register */
-#     if not wireReadDataByte(APDS9960_AIHTH, val_byte): 
-#         return False
-    
-#     threshold = threshold + ((uint16_t)val_byte << 8)
-    
-#     return True
+    def getLightIntHighThreshold(self):
+        """
+            .. method:: getLightIntHighThreshold()
+            
+                Gets the high threshold for ambient light interrupts
+                threshold: current low threshold stored on the APDS-9960
+        """
 
+           
+        try:
+            valLow = self.write_read(APDS9960_AIHTL, 1)[0]
+            valHight = self.write_read(APDS9960_AIHTH, 1)[0]
+        except:
+            raise ErrorReadingRegister
+                    
+        
+        return valLow + (valHight << 8)
+        
+  
 
     def setLightIntHighThreshold(self, threshold):
         """
@@ -1737,96 +1817,90 @@ class APDS9960(i2c.I2C):
            raise ErrorWritingRegister
 
 
-#*
 
-#*
-#  * @brief Gets the low threshold for proximity interrupts
-#  *
-#  * @param[out] threshold current low threshold stored on the APDS-9960
-#  * @return True if operation successful. False otherwise.
-#  */
-#     def getProximityIntLowThreshold(uint8_t &threshold)
-
-#     threshold = 0
-    
-#     # Read value from proximity low threshold register */
-#     if not wireReadDataByte(APDS9960_PILT, threshold): 
-#         return False
-    
-    
-#     return True
-
-
-# #*
-#  * @brief Sets the low threshold for proximity interrupts
-#  *
-#  * @param[in] threshold low threshold value for interrupt to trigger
-#  * @return True if operation successful. False otherwise.
-#  */
-#     def setProximityIntLowThreshold(uint8_t threshold)
-
-    
-#     # Write threshold value to register */
-#     self._write_bytes(APDS9960_PILT, threshold): 
-#         return False
-    
-    
-#     return True
-
-    
-#*
-#  * @brief Gets the high threshold for proximity interrupts
-#  *
-#  * @param[out] threshold current low threshold stored on the APDS-9960
-#  * @return True if operation successful. False otherwise.
-#  */
-#     def getProximityIntHighThreshold(uint8_t &threshold)
-
-#     threshold = 0
-    
-#     # Read value from proximity low threshold register */
-#     if not wireReadDataByte(APDS9960_PIHT, threshold): 
-#         return False
-    
-    
-#     return True
+    def getProximityIntLowThreshold(self):
+        """
+            .. method:: getProximityIntLowThreshold()
+                
+                Gets the low threshold for proximity interrupts
+            
+        """
+        
+        try:
+            val = self.write_read(APDS9960_PILT, 1)[0]
+        except:
+            raise ErrorReadingRegister
+                    
+        
+        return val
+   
 
 
-# #*
-#  * @brief Sets the high threshold for proximity interrupts
-#  *
-#  * @param[in] threshold high threshold value for interrupt to trigger
-#  * @return True if operation successful. False otherwise.
-#  */
-#     def setProximityIntHighThreshold(uint8_t threshold)
+    def setProximityIntLowThreshold(self, threshold):
+        """
+            .. method:: setProximityIntLowThreshold(threshold)
+            
+                Sets the low threshold for proximity interrupts
+                threshold: low threshold value for interrupt to trigger
+            
+        """
+        
+        try:       
+            self._write_bytes(APDS9960_PILT,threshold)
+        except:
+           raise ErrorWritingRegister
 
     
-#     # Write threshold value to register */
-#     self._write_bytes(APDS9960_PIHT, threshold): 
-#         return False
-    
-    
-#     return True
+    def getProximityIntHighThreshold(self):
+        
+        """
+            .. method:: getProximityIntHighThreshold()
+                
+               Gets the high threshold for proximity interrupts
+            
+        """
+        
+        try:
+            val = self.write_read(APDS9960_PIHT, 1)[0]
+        except:
+            raise ErrorReadingRegister
+                    
+        
+        return val
+   
+
+    def setProximityIntHighThreshold(self, threshold):
+        """
+            .. method:: setProximityIntHighThreshold(threshold)
+                
+                Sets the high threshold for proximity interrupts
+                threshold: high threshold value for interrupt to trigger
+            
+        """
+        
+        try:       
+            self._write_bytes(APDS9960_PIHT,threshold)
+        except:
+           raise ErrorWritingRegister
 
 
-#*
- # * @brief Gets if ambient light interrupts are enabled or not
- # *
- # * @return 1 if interrupts are enabled, 0 if not. 0xFF on error.
- # */
- #    def getAmbientLightIntEnable(self):
+    def getAmbientLightIntEnable(self):
+        """
+            .. method:: getAmbientLightIntEnable()
+                
+                Gets if ambient light interrupts are enabled or not
+                Return 1 if interrupts are enabled, 0 if not.
+        """
+        
+        try:
+            val = self.write_read(APDS9960_ENABLE, 1)[0]
+        except:
+            raise ErrorReadingRegister
 
- #    uint8_t val
+        # Shift and mask out AIEN bit */
+        val = (val >> 4) & 0b00000001
     
- #    # Read value from ENABLE register */
- #    if not wireReadDataByte(APDS9960_ENABLE, val): 
- #        return ERROR
-    
-    
- #    # Shift and mask out AIEN bit */
- #    val = (val >> 4) & 0b00000001
-    
- #    return val
+        return val
 
 
 
@@ -1835,9 +1909,7 @@ class APDS9960(i2c.I2C):
             .. method:: setAmbientLightIntEnable(enable)
                 
                 Turns ambient light interrupts on or off
-         
                 enable 1 to enable interrupts, 0 to turn them off
-                return True if operation successful. False otherwise.
         """
 
         try:
@@ -1857,27 +1929,25 @@ class APDS9960(i2c.I2C):
         except:
            raise ErrorWritingRegister
    
-        return True
 
+    def getProximityIntEnable(self):
+        """
+            .. method:: getProximityIntEnable()
+                
+                Gets if proximity interrupts are enabled or not
+                Return 1 if interrupts are enabled, 0 if not.
+        """
+        
+        try:
+            val = self.write_read(APDS9960_ENABLE, 1)[0]
+        except:
+            raise ErrorReadingRegister
 
-#*
- # * @brief Gets if proximity interrupts are enabled or not
- # *
- # * @return 1 if interrupts are enabled, 0 if not. 0xFF on error.
- # */
- #    def getProximityIntEnable(self):
-
- #    uint8_t val
-    
- #    # Read value from ENABLE register */
- #    if not wireReadDataByte(APDS9960_ENABLE, val): 
- #        return ERROR
-    
-    
- #    # Shift and mask out PIEN bit */
- #    val = (val >> 5) & 0b00000001
-    
- #    return val
+   
+        # Shift and mask out PIEN bit */
+        val = (val >> 5) & 0b00000001
+        
+        return val
 
 
     def setProximityIntEnable(self, enable):
@@ -1886,7 +1956,6 @@ class APDS9960(i2c.I2C):
             
                 Turns proximity interrupts on or off
                 enable 1 to enable interrupts, 0 to turn them off
-                return True if operation successful. False otherwise.
         """
 
         try:
@@ -1905,11 +1974,6 @@ class APDS9960(i2c.I2C):
         except:
            raise ErrorWritingRegister
    
-        return True
-
-
-
-
 
     def getGestureIntEnable(self):
         """
@@ -1938,7 +2002,6 @@ class APDS9960(i2c.I2C):
             
                 Turns gesture-related interrupts on or off
                 enable 1 to enable interrupts, 0 to turn them off
-                return True if operation successful.
         """
 
         try:
@@ -1959,21 +2022,20 @@ class APDS9960(i2c.I2C):
         except:
            raise ErrorWritingRegister
    
-        return True
 
 # #*
 #  * @brief Clears the ambient light interrupt
 #  *
 #  * @return True if operation completed successfully. False otherwise.
 #  */
-#     def clearAmbientLightInt(self):
+    # def clearAmbientLightInt(self):
 
-#     uint8_t throwaway
-#     if not wireReadDataByte(APDS9960_AICLEAR, throwaway): 
-#         return False
+    # uint8_t throwaway
+    # if not wireReadDataByte(APDS9960_AICLEAR, throwaway): 
+    #     return False
     
     
-#     return True
+    # return True
 
 
 #*
@@ -2014,7 +2076,6 @@ class APDS9960(i2c.I2C):
 # #*
 
     def setGestureMode(self, mode):
-        
         """
             .. method:: setGestureMode(mode)
             
@@ -2032,14 +2093,11 @@ class APDS9960(i2c.I2C):
         val &= 0b11111110;
         val |= mode;
     
-        try:       
-            self._write_bytes(APDS9960_GCONF4, val)
-            
-        except:
-            return False
-
-        return True
+             
+        self._write_bytes(APDS9960_GCONF4, val)
         
+
+
     def _printDEBUG(self, *msg):
         if DEBUG:
             print(*msg)
