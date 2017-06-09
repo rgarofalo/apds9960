@@ -5,7 +5,8 @@
 APDS9960 Module
 *************
 
-This module contains the driver for APDS-9960, It's  features are Gesture detection,  Proximity  detection,  Digital  Ambient  Light  Sense (ALS) and Color Sense (RGBC)
+This module contains the driver for APDS-9960, It's  features are Gesture detection,  Proximity  detection,  Digital  Ambient  Light  Sense (ALS) and Color Sense (RGBC).
+
 The APDS-9960 is a serious little piece of hardware with built in UV and IR blocking filters, four separate diodes sensitive to different directions, and an I2C compatible interface
 (`datasheet <https://cdn.sparkfun.com/datasheets/Sensors/Proximity/apds9960.pdf>`_).
 """
@@ -366,7 +367,9 @@ class APDS9960(i2c.I2C):
             .. method:: setMode(mode, enable)
             
                 Enables or disables a feature in the APDS-9960
-                mode: feature to enable
+                
+                mode: feature to enable  
+                
                 enable: ON (1) or OFF (0)
         """
 
@@ -458,11 +461,11 @@ class APDS9960(i2c.I2C):
 
                 Starts the gesture recognition engine on the APDS-9960
                 
-                Enable gesture mode
-                Set ENABLE to 0 (power off)
-                Set WTIME to 0xFF
-                Set AUX to LED_BOOST_300
-                Enable PON, WEN, PEN, GEN in ENABLE
+                * Enable gesture mode
+                * Set ENABLE to 0 (power off)
+                * Set WTIME to 0xFF
+                * Set AUX to LED_BOOST_300
+                * Enable PON, WEN, PEN, GEN in ENABLE
                 
         """ 
         self.resetGestureParameters()
@@ -1039,12 +1042,17 @@ class APDS9960(i2c.I2C):
                 
                 Returns LED drive strength for proximity and ALS
                 
-                +------+-------------+
-                |Value    LED Current
-                  0        100 mA
-                  1         50 mA
-                  2         25 mA
-                  3         12.5 mA
+                +---------+---------------+
+                |  Value  |  LED Current  |
+                +---------+---------------+
+                |    0    |    100 mA     |
+                +---------+---------------+
+                |    1    |     50 mA     |
+                +---------+---------------+
+                |    2    |     25 mA     |
+                +---------+---------------+
+                |    3    |     12.5 mA   |
+                +---------+---------------+
                 
         """
 
@@ -1060,14 +1068,20 @@ class APDS9960(i2c.I2C):
     def setLEDDrive(self, drive):
         """
             .. method:: setLEDDrive(drive)
-            
+                
                 brief Sets the LED drive strength for proximity and ALS
                  
-                    Value    LED Current
-                      0        100 mA
-                      1         50 mA
-                      2         25 mA
-                      3         12.5 mA
+                +---------+---------------+
+                |  Value  |  LED Current  |
+                +---------+---------------+
+                |    0    |    100 mA     |
+                +---------+---------------+
+                |    1    |     50 mA     |
+                +---------+---------------+
+                |    2    |     25 mA     |
+                +---------+---------------+
+                |    3    |     12.5 mA   |
+                +---------+---------------+
                  
                  drive the value (0-3) for the LED drive strength
                  
@@ -1327,7 +1341,7 @@ class APDS9960(i2c.I2C):
         """
             .. method:: setProxGainCompEnable(enable)
                 
-                Sets the proximity gain compensation enable
+                Sets the proximity gain compensation enable.
                 enable 1 to enable compensation. 0 to disable compensation.
             
         """
@@ -1500,7 +1514,7 @@ class APDS9960(i2c.I2C):
             
                 Gets the gain of the photodiode during gesture mode
                 
-                   +--------+----------+
+                    +--------+----------+
                     | Value  |  Gain    |
                     +========+==========+
                     |  0     |  1x      |
@@ -1599,8 +1613,9 @@ class APDS9960(i2c.I2C):
     def setGestureLEDDrive(self, drive):
         """
             .. method:: setGestureLEDDrive(drive)
-                
+            
                 Sets the LED drive current during gesture mode
+                
                     +--------+--------------+
                     | Value  |  LED Current |
                     +========+==============+

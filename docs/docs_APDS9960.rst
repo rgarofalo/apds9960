@@ -4,7 +4,8 @@
 APDS9960 Module
 *************
 
-This module contains the driver for APDS-9960, It's  features are Gesture detection,  Proximity  detection,  Digital  Ambient  Light  Sense (ALS) and Color Sense (RGBC)
+This module contains the driver for APDS-9960, It's  features are Gesture detection,  Proximity  detection,  Digital  Ambient  Light  Sense (ALS) and Color Sense (RGBC).
+
 The APDS-9960 is a serious little piece of hardware with built in UV and IR blocking filters, four separate diodes sensitive to different directions, and an I2C compatible interface
 (`datasheet <https://cdn.sparkfun.com/datasheets/Sensors/Proximity/apds9960.pdf>`_).
     ==================
@@ -19,7 +20,9 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
 .. method:: setMode(mode, enable)
 
     Enables or disables a feature in the APDS-9960
-    mode: feature to enable
+    
+    mode: feature to enable  
+    
     enable: ON (1) or OFF (0)
 .. method:: enableLightSensor(interrupts)
 
@@ -39,11 +42,11 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
 
     Starts the gesture recognition engine on the APDS-9960
     
-    Enable gesture mode
-    Set ENABLE to 0 (power off)
-    Set WTIME to 0xFF
-    Set AUX to LED_BOOST_300
-    Enable PON, WEN, PEN, GEN in ENABLE
+    * Enable gesture mode
+    * Set ENABLE to 0 (power off)
+    * Set WTIME to 0xFF
+    * Set AUX to LED_BOOST_300
+    * Enable PON, WEN, PEN, GEN in ENABLE
     
 .. method:: disableGestureSensor()
 
@@ -98,22 +101,34 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
 .. method:: getLEDDrive()
     
     Returns LED drive strength for proximity and ALS
-
-    Value    LED Current
-      0        100 mA
-      1         50 mA
-      2         25 mA
-      3         12.5 mA
+    
+    +---------+---------------+
+    |  Value  |  LED Current  |
+    +---------+---------------+
+    |    0    |    100 mA     |
+    +---------+---------------+
+    |    1    |     50 mA     |
+    +---------+---------------+
+    |    2    |     25 mA     |
+    +---------+---------------+
+    |    3    |     12.5 mA   |
+    +---------+---------------+
     
 .. method:: setLEDDrive(drive)
-
+    
     brief Sets the LED drive strength for proximity and ALS
      
-        Value    LED Current
-          0        100 mA
-          1         50 mA
-          2         25 mA
-          3         12.5 mA
+    +---------+---------------+
+    |  Value  |  LED Current  |
+    +---------+---------------+
+    |    0    |    100 mA     |
+    +---------+---------------+
+    |    1    |     50 mA     |
+    +---------+---------------+
+    |    2    |     25 mA     |
+    +---------+---------------+
+    |    3    |     12.5 mA   |
+    +---------+---------------+
      
      drive the value (0-3) for the LED drive strength
      
@@ -121,58 +136,94 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
 
     Returns receiver gain for proximity detection
      
-      Value    Gain
-        0       1x
-        1       2x
-        2       4x
-        3       8x
+    +--------+---------+
+    |  Value |  Gain   |
+    +========+=========+
+    |    0   |    1x   |
+    +--------+---------+
+    |    1   |    2x   |
+    +--------+---------+
+    |    2   |    4x   |
+    +--------+---------+
+    |    3   |    8x   |
+    +--------+---------+
      
       return the value of the proximity gain.
 .. method:: setProximityGain(drive):
 
     Sets the receiver gain for proximity detection
     
-     Value    Gain
-       0       1x
-       1       2x
-       2       4x
-       3       8x
+    +--------+---------+
+    |  Value |  Gain   |
+    +========+=========+
+    |    0   |    1x   |
+    +--------+---------+
+    |    1   |    2x   |
+    +--------+---------+
+    |    2   |    4x   |
+    +--------+---------+
+    |    3   |    8x   |
+    +--------+---------+
+    
     
     drive the value (0-3) for the gain
     return True if operation successful.
 .. method:: getAmbientLightGain()
 
     Returns receiver gain for the ambient light sensor (ALS)
- 
-        Value    Gain
-          0        1x
-          1        4x
-          2       16x
-          3       64x
+
+    +--------+---------+
+    |  Value |  Gain   |
+    +========+=========+
+    |    0   |    1x   |
+    +--------+---------+
+    |    1   |    4x   |
+    +--------+---------+
+    |    2   |    16x  |
+    +--------+---------+
+    |    3   |    64x  |
+    +--------+---------+
+    
 
     return the value of the ALS gain. 0xFF on failure.
 .. method:: setAmbientLightGain(drive)
 
     Sets the receiver gain for the ambient light sensor (ALS)
  
-      Value    Gain
-        0        1x
-        1        4x
-        2       16x
-        3       64x
+    +--------+---------+
+    |  Value |  Gain   |
+    +========+=========+
+    |    0   |    1x   |
+    +--------+---------+
+    |    1   |    4x   |
+    +--------+---------+
+    |    2   |    16x  |
+    +--------+---------+
+    |    3   |    64x  |
+    +--------+---------+
+    
      
     drive the value (0-3) for the gain
     return True if operation successful. False otherwise.
 .. method:: getLEDBoost()
 
     brief Get the current LED boost value
-    Value  Boost Current
-      0        100%
-      1        150%
-      2        200%
-      3        300%
- 
-     return the LED boost value.
+    
+    +-------+----------------+
+    | Value | Boost Current  |
+    +=======+================+
+    |  0    |  100%          |
+    +-------+----------------+
+    |  1    |  150%          |
+    +-------+----------------+
+    |  2    |  200%          |
+    +-------+----------------+
+    |  3    |  300%          |
+    +-------+----------------+
+    
+      
+      
+    return the LED boost value.
 .. method:: setLEDBoost(boost)
 .. method:: getProxGainCompEnable()
     
@@ -180,29 +231,42 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
     return 1 if compensation is enabled. 0 if not. 
 .. method:: setProxGainCompEnable(enable)
     
-    Sets the proximity gain compensation enable
+    Sets the proximity gain compensation enable.
     enable 1 to enable compensation. 0 to disable compensation.
 .. method:: getProxPhotoMask()
 
     Gets the current mask for enabled/disabled proximity photodiodes
     
     1 = disabled, 0 = enabled
-    Bit    Photodiode
-     3       UP
-     2       DOWN
-     1       LEFT
-     0       RIGHT
+    
+    +-----+-----------------+
+    | Bit |   Photodiode    |
+    +=====+=================+
+    | 3   |    UP           |
+    +-----+-----------------+
+    | 2   |    DOWN         |
+    +-----+-----------------+
+    | 1   |    LEFT         |
+    +-----+-----------------+
+    | 0   |    RIGHT        |
+    +-----+-----------------+
 .. method:: setProxPhotoMask(mask)
 
     Sets the mask for enabling/disabling proximity photodiodes
     
     1 = disabled, 0 = enabled
     
-    Bit    Photodiode
-     3       UP
-     2       DOWN
-     1       LEFT
-     0       RIGHT
+    +-----+-----------------+
+    | Bit |   Photodiode    |
+    +=====+=================+
+    | 3   |    UP           |
+    +-----+-----------------+
+    | 2   |    DOWN         |
+    +-----+-----------------+
+    | 1   |    LEFT         |
+    +-----+-----------------+
+    | 0   |    RIGHT        |
+    +-----+-----------------+
 .. method:: getGestureEnterThresh()
     
     Gets the entry proximity threshold for gesture sensing
@@ -227,58 +291,95 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
 
     Gets the gain of the photodiode during gesture mode
     
-      Value    Gain
-        0       1x
-        1       2x
-        2       4x
-        3       8x
+        +--------+----------+
+        | Value  |  Gain    |
+        +========+==========+
+        |  0     |  1x      |
+        +--------+----------+
+        |  1     |  2x      |
+        +--------+----------+
+        |  2     |  4x      |
+        +--------+----------+
+        |  3     |  8x      |
+        +--------+----------+
         
     return the current photodiode gain.
 .. method:: setGestureGain(gain)
 
     Sets the gain of the photodiode during gesture mode
  
-        Value    Gain
-          0       1x
-          1       2x
-          2       4x
-          3       8x
- 
+        +--------+----------+
+        | Value  |  Gain    |
+        +========+==========+
+        |  0     |  1x      |
+        +--------+----------+
+        |  1     |  2x      |
+        +--------+----------+
+        |  2     |  4x      |
+        +--------+----------+
+        |  3     |  8x      |
+        +--------+----------+
+
     gain the value for the photodiode gain
 .. method:: getGestureLEDDrive()
 
     Gets the drive current of the LED during gesture mode
  
-      Value    LED Current
-        0        100 mA
-        1         50 mA
-        2         25 mA
-        3         12.5 mA
+        +--------+--------------+
+        | Value  |  LED Current |
+        +========+==============+
+        |  0     |   100 mA     |
+        +--------+--------------+
+        |  1     |    50 mA     |
+        +--------+--------------+
+        |  2     |    25 mA     |
+        +--------+--------------+
+        |  3     |    12.5 mA   |
+        +--------+--------------+
+
  
    return the LED drive current value.
 .. method:: setGestureLEDDrive(drive)
-    
+
     Sets the LED drive current during gesture mode
- 
-        Value    LED Current
-          0        100 mA
-          1         50 mA
-          2         25 mA
-          3         12.5 mA
+    
+        +--------+--------------+
+        | Value  |  LED Current |
+        +========+==============+
+        |  0     |   100 mA     |
+        +--------+--------------+
+        |  1     |    50 mA     |
+        +--------+--------------+
+        |  2     |    25 mA     |
+        +--------+--------------+
+        |  3     |    12.5 mA   |
+        +--------+--------------+
+
+
  
     drive the value for the LED drive current
 .. method: getGestureWaitTime
     Gets the time in low power mode between gesture detections
  
-        Value    Wait time
-          0          0 ms
-          1          2.8 ms
-          2          5.6 ms
-          3          8.4 ms
-          4         14.0 ms
-          5         22.4 ms
-          6         30.8 ms
-          7         39.2 ms
+        +----------+-------------+
+        |  Value   |  Wait time  |
+        +==========+=============+
+        |    0     |     0 ms    |
+        +----------+-------------+
+        |    1     |     2.8 ms  |
+        +----------+-------------+
+        |    2     |     5.6 ms  |
+        +----------+-------------+
+        |    3     |     8.4 ms  |
+        +----------+-------------+
+        |    4     |    14.0 ms  |
+        +----------+-------------+
+        |    5     |    22.4 ms  |
+        +----------+-------------+
+        |    6     |    30.8 ms  |
+        +----------+-------------+
+        |    7     |    39.2 ms  |
+        +----------+-------------+
  
     return the current wait time between gestures.
 .. method:: setGestureWaitTime(time)
@@ -287,7 +388,7 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
 
         +----------+-------------+
         |  Value   |  Wait time  |
-        +==========+:============+
+        +==========+=============+
         |    0     |     0 ms    |
         +----------+-------------+
         |    1     |     2.8 ms  |
