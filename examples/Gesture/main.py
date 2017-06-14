@@ -36,84 +36,93 @@
 # Distributed as-is; no warranty is given.
 # ****************************************************************/
 
-#include <Wire.h>
-#include <SparkFun_APDS9960.h>
+import streams
+import APDS9960
+import threading
 
-// Pins
-#define APDS9960_INT    2 // Needs to be an interrupt pin
 
-// Constants
+streams.serial()
+lock= threading.Lock()
 
-// Global Variables
-SparkFun_APDS9960 apds = SparkFun_APDS9960();
-int isr_flag = 0;
+flagGesture = threading.Event()
+gesture=None
+isr_flag=0
 
-void setup() {
+def interruptRoutine():
+    global isr_flag, enableIntFlag
+    if isr_flag==0:
+        isr_flag = 1
 
-  // Set interrupt pin as input
-  pinMode(APDS9960_INT, INPUT);
+onPinFall(D21,interruptRoutine)
+    
 
-  // Initialize Serial port
-  Serial.begin(9600);
-  Serial.println();
-  Serial.println(F("--------------------------------"));
-  Serial.println(F("SparkFun APDS-9960 - GestureTest"));
-  Serial.println(F("--------------------------------"));
-  
-  // Initialize interrupt service routine
-  attachInterrupt(0, interruptRoutine, FALLING);
+try:
+   
+    IRGesture = APDS9960.APDS9960(I2C0)
+    IRGesture.initialize()
+    IRGesture.enableGestureSensor(True)
+    
+except Exception as e:
+    print(e)
+    
+def irGestureRun():
+    global isr_flag, IRGesture, gesture, flagGesture
+    while True:
+        try:
+            lock.acquire()
+            
+            if isr_flag==1:
+                if IRGesture.isGestureAvailable():
+                    gesture = IRGesture.readGesture()
+                    flagGesture.set()
+                   
+                else:
+                    print("Gesture Disable")
+                
+                isr_flag=0
+                
+            lock.release()
 
-  // Initialize APDS-9960 (configure I2C and initial values)
-  if ( apds.init() ) {
-    Serial.println(F("APDS-9960 initialization complete"));
-  } else {
-    Serial.println(F("Something went wrong during APDS-9960 init!"));
-  }
-  
-  // Start running the APDS-9960 gesture sensor engine
-  if ( apds.enableGestureSensor(true) ) {
-    Serial.println(F("Gesture sensor is now running"));
-  } else {
-    Serial.println(F("Something went wrong during gesture sensor init!"));
-  }
-}
+                
+        except Exception as e:
+            print(e)
+        
+        sleep(20)
 
-void loop() {
-  if( isr_flag == 1 ) {
-    detachInterrupt(0);
-    handleGesture();
-    isr_flag = 0;
-    attachInterrupt(0, interruptRoutine, FALLING);
-  }
-}
 
-void interruptRoutine() {
-  isr_flag = 1;
-}
 
-void handleGesture() {
-    if ( apds.isGestureAvailable() ) {
-    switch ( apds.readGesture() ) {
-      case DIR_UP:
-        Serial.println("UP");
-        break;
-      case DIR_DOWN:
-        Serial.println("DOWN");
-        break;
-      case DIR_LEFT:
-        Serial.println("LEFT");
-        break;
-      case DIR_RIGHT:
-        Serial.println("RIGHT");
-        break;
-      case DIR_NEAR:
-        Serial.println("NEAR");
-        break;
-      case DIR_FAR:
-        Serial.println("FAR");
-        break;
-      default:
-        Serial.println("NONE");
-    }
-  }
-}
+def gestureRecognition():
+    global gesture
+    while True:
+        lock.acquire()
+        
+            
+        if gesture == 'DIR_UP':
+            print("UP")
+        elif gesture == 'DIR_DOWN':
+            print("DOWN")
+        elif gesture =='DIR_LEFT':
+            print("LEFT")
+        elif gesture == 'DIR_RIGHT':
+            print('RIGHT')
+        elif gesture == 'DIR_NEAR':
+            print('NEAR')
+        elif gesture =='DIR_FAR':
+            print("FAR")
+        else:
+            print("NONE")
+
+        lock.release()
+        sleep(500)
+        flagGesture.wait()
+        flagGesture.clear()
+    
+   
+
+
+
+thread(gestureRecognition)
+
+
+           
+
