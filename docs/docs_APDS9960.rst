@@ -542,6 +542,8 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
     
     enable:
         1 to enable interrupts or 0 to turn them off
+..method:: clearAmbientLightInt()
+    Clears the ambient light interrupt
 ..method:: clearProximityInt()
 
     Clears the proximity interrupt
