@@ -474,23 +474,28 @@ class APDS9960(i2c.I2C):
                 * Enable PON, WEN, PEN, GEN in ENABLE
 
         """ 
-        self.resetGestureParameters()
-        self._write_bytes(APDS9960_WTIME, 0xFF)
+        try:
+            self._resetGestureParameters()
+            self._write_bytes(APDS9960_WTIME, 0xFF)
+            
+            self._write_bytes(APDS9960_PPULSE, DEFAULT_GESTURE_PPULSE)
         
-        self._write_bytes(APDS9960_PPULSE, DEFAULT_GESTURE_PPULSE)
+            self.setLEDBoost(LED_BOOST_300)
     
-        self.setLEDBoost(LED_BOOST_300)
-
-        if interrupts:
-            self.setGestureIntEnable(1)
-        else:
-            self.setGestureIntEnable(0)
-    
-        self.setGestureMode(1)
-        self.enablePower(self)
-        self.setMode(WAIT, 1)
-        self.setMode(PROXIMITY, 1)
-        self.setMode(GESTURE, 1)
+            if interrupts:
+                self.setGestureIntEnable(1)
+            else:
+                self.setGestureIntEnable(0)
+        
+            self.setGestureMode(1)
+            self.enablePower(self)
+            self.setMode(WAIT, 1)
+            self.setMode(PROXIMITY, 1)
+            self.setMode(GESTURE, 1)
+        
+        except Exception as e:
+            print(e)
+        
 
 
 
@@ -501,7 +506,7 @@ class APDS9960(i2c.I2C):
                 Ends the gesture recognition engine on the APDS-9960
         """
 
-        self.resetGestureParameters()
+        self._resetGestureParameters()
         self.setGestureIntEnable(0) 
         self.setGestureMode(0)
         self.setMode(GESTURE, 0)
@@ -631,7 +636,7 @@ class APDS9960(i2c.I2C):
                 self._printDEBUG(self.gesture_motion_)
                 self._printDEBUG(gstatus)
     
-                self.resetGestureParameters()
+                self._resetGestureParameters()
                 return motion
 
     def enablePower(self):
@@ -2129,14 +2134,18 @@ class APDS9960(i2c.I2C):
 #  *
 #  * @return True if operation completed successfully. False otherwise.
 #  */
-    # def clearAmbientLightInt(self):
-
-    # uint8_t throwaway
-    # if not wireReadDataByte(APDS9960_AICLEAR, throwaway): 
-    #     return False
-    
-    
-    # return True
+    def clearAmbientLightInt(self):
+        """
+            ..method:: clearAmbientLightInt()
+                Clears the ambient light interrupt
+            
+        """
+        
+        try:
+            val = self.write_read(APDS9960_AICLEAR, 1)[0]
+        except:
+            raise ErrorReadingRegister
+  
 
 
     def clearProximityInt(self):
