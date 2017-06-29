@@ -1,8 +1,8 @@
 """
-.. module:: APDS9960
+.. module:: APDS-9960.APDS9960
 
 *************
-APDS9960
+APDS9960 Module
 *************
 
 This module contains the driver for APDS-9960, It's  features are Gesture detection,  Proximity  detection,  Digital  Ambient  Light  Sense (ALS) and Color Sense (RGBC).
@@ -2129,14 +2129,11 @@ class APDS9960(i2c.I2C):
            raise ErrorWritingRegister
    
 
-# #*
-#  * @brief Clears the ambient light interrupt
-#  *
-#  * @return True if operation completed successfully. False otherwise.
-#  */
+
     def clearAmbientLightInt(self):
         """
-            ..method:: clearAmbientLightInt()
+            .. method:: clearAmbientLightInt()
+            
                 Clears the ambient light interrupt
             
         """
@@ -2150,7 +2147,7 @@ class APDS9960(i2c.I2C):
 
     def clearProximityInt(self):
         """
-            ..method:: clearProximityInt()
+            .. method:: clearProximityInt()
             
                 Clears the proximity interrupt
                 
@@ -2166,7 +2163,7 @@ class APDS9960(i2c.I2C):
 
     def getGestureMode(self):
         """
-            ..method:: getGestureMode()
+            .. method:: getGestureMode()
             
                 Tells if the gesture state machine is currently running
                 

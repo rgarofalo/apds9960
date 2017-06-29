@@ -1,7 +1,7 @@
 .. module:: APDS9960
 
 *************
-APDS9960
+APDS9960 Module
 *************
 
 This module contains the driver for APDS-9960, It's  features are Gesture detection,  Proximity  detection,  Digital  Ambient  Light  Sense (ALS) and Color Sense (RGBC).
@@ -542,13 +542,14 @@ The APDS-9960 is a serious little piece of hardware with built in UV and IR bloc
     
     enable:
         1 to enable interrupts or 0 to turn them off
-..method:: clearAmbientLightInt()
+.. method:: clearAmbientLightInt()
+
     Clears the ambient light interrupt
-..method:: clearProximityInt()
+.. method:: clearProximityInt()
 
     Clears the proximity interrupt
     
-..method:: getGestureMode()
+.. method:: getGestureMode()
 
     Tells if the gesture state machine is currently running
     

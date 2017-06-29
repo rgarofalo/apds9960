@@ -1,7 +1,7 @@
 #APDS-9960
     ##APDS9960
-		AmbientLightInterrupt
-		ColorSensor
-		Gesture
-		ProximityInterrupt
-		ProximitySensor
+        AmbientLightInterrupt
+        ColorSensor
+        Gesture
+        ProximityInterrupt
+        ProximitySensor
