@@ -1,5 +1,7 @@
-AmbientLightInterrupt
-ColorSensor
-Gesture
-ProximityInterrupt
-ProximitySensor
+#Avago
+    ##ADPS9960
+        AmbientLightInterrupt
+        ColorSensor
+        Gesture
+        ProximityInterrupt
+        ProximitySensor

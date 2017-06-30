@@ -1,4 +1,4 @@
-.. module:: APDS-9960.APDS9960
+.. module:: Avago.APDS9960
 
 *************
 APDS9960 Module
