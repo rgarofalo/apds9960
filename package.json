@@ -6,14 +6,14 @@
     "fullname": "lib.rgarofalo.apds9960",
     "git_pointer": "local://Udm_YaW2SwOra9ebseMcKQ/B6hOOHZ7R-qaymbV2g0WLQ",
     "keywords": [
-        "Gesture",
-        "Proximity",
-        "Color Sense",
         "APDS-9960",
-        "Avago"
+        "Gesture",
+        "Color Sense",
+        "Detection",
+        "Proximity"
     ],
     "repo": "community",
     "title": "APDS-9960",
     "version": "r1.0.0",
-    "whatsnew": ""
+    "whatsnew": "first commit"
 }
