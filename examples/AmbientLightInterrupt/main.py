@@ -33,7 +33,7 @@ def interruptRoutine():
         isr_flag = 1
 
 
-onPinFall(APDS9960_INT,interruptRoutine)
+onPinRise(APDS9960_INT,interruptRoutine)
 pinMode(LED_PIN,OUTPUT)
 
 

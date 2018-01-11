@@ -28,7 +28,7 @@ def interruptRoutine():
     if isr_flag==0:
         isr_flag = 1
 
-onPinFall(APDS9960_INT,interruptRoutine)
+onPinRise(APDS9960_INT,interruptRoutine)
 pinMode(LED_PIN,OUTPUT)
 
 print("---------------------------------------")
