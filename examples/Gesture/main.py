@@ -29,7 +29,7 @@ gesture=None
 isr_flag=0
 
 def interruptRoutine():
-    global isr_flag, enableIntFlag
+    global isr_flag
     if isr_flag==0:
         isr_flag = 1
 
