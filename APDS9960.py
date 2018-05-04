@@ -1,8 +1,8 @@
 """
-.. module:: Avago.APDS9960
+.. module:: Avago.apds9960
 
 *************
-APDS9960 Module
+apds9960 Module
 *************
 
 This module contains the driver for APDS-9960, It's  features are Gesture detection,  Proximity  detection,  Digital  Ambient  Light  Sense (ALS) and Color Sense (RGBC).
@@ -18,8 +18,8 @@ import streams
 streams.serial()
 
 
-new_exception(RuntimeErrorSet,ValueError,'Cannot override values')
-new_exception(RuntimeErrorDel,ValueError,'Cannot delete values')
+new_exception(RuntimeErrorSet,ValueError,'Can not override values')
+new_exception(RuntimeErrorDel,ValueError,'Can not delete values')
 new_exception(ErrorReadingRegister,RuntimeError,'It was an error while reading the register')
 new_exception(ErrorWritingRegister,RuntimeError,'There was an error writing to the register')
 new_exception(ErrorDevice,RuntimeError,'Error device 0xFF')

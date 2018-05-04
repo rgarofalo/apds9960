@@ -1,7 +1,7 @@
-.. module:: Avago.APDS9960
+.. module:: Avago.apds9960
 
 *************
-APDS9960 Module
+apds9960 Module
 *************
 
 This module contains the driver for APDS-9960, It's  features are Gesture detection,  Proximity  detection,  Digital  Ambient  Light  Sense (ALS) and Color Sense (RGBC).
